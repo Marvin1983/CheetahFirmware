@@ -1,3 +1,6 @@
 [submodule "lib/ChRt"]
 	path = lib/ChRt
 	url = git@github.com:Nate711/ChRt.git
+[submodule "lib/FlexCAN_Library"]
+	path = lib/FlexCAN_Library
+	url = git@github.com:pawelsky/FlexCAN_Library.git
