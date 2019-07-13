@@ -4,3 +4,6 @@
 [submodule "lib/FlexCAN_Library"]
 	path = lib/FlexCAN_Library
 	url = git@github.com:pawelsky/FlexCAN_Library.git
+[submodule "lib/SdFat"]
+	path = lib/SdFat
+	url = git@github.com:greiman/SdFat.git
