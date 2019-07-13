@@ -1,0 +1,3 @@
+[submodule "lib/ChRt"]
+	path = lib/ChRt
+	url = git@github.com:Nate711/ChRt.git
