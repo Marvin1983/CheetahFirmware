@@ -9,6 +9,7 @@
 using namespace Eigen;
 
 FlexCAN CANbus0(1000000, 0);
+FlexCAN CANbus1(1000000, 1);
 
 /// CAN Command Packet Structure ///
 /// 16 bit position command, between -4*pi and 4*pi
@@ -27,15 +28,15 @@ FlexCAN CANbus0(1000000, 0);
 /// 6: [kd[3-0], torque[11-8]]
 /// 7: [torque[7-0]]
 
-void jointController::packCmd(CAN_message_t *msg)
+void jointController::packCmd(CANMessage *msg)
 {
 
 	/// limit data to be within bounds ///
-	float pDes = fminf(fmaxf(P_MIN, pDes), P_MAX);
-	float vDes = fminf(fmaxf(V_MIN, vDes), V_MAX);
-	float kp = fminf(fmaxf(KP_MIN, kp), KP_MAX);
-	float kd = fminf(fmaxf(KD_MIN, kd), KD_MAX);
-	float tFF = fminf(fmaxf(T_MIN, tFF), T_MAX);
+	pDes = fminf(fmaxf(P_MIN, pDes), P_MAX);
+	vDes = fminf(fmaxf(V_MIN, vDes), V_MAX);
+	kp = fminf(fmaxf(KP_MIN, kp), KP_MAX);
+	kd = fminf(fmaxf(KD_MIN, kd), KD_MAX);
+	tFF = fminf(fmaxf(T_MIN, tFF), T_MAX);
 	/// convert floats to unsigned ints ///
 	uint16_t pInt = float_to_uint(pDes, P_MIN, P_MAX, 16);
 	uint16_t vInt = float_to_uint(vDes, V_MIN, V_MAX, 12);
@@ -53,9 +54,10 @@ void jointController::packCmd(CAN_message_t *msg)
 	msg->buf[7] = tInt & 0xff;
 }
 
-jointController::jointController(int canID, float initPos)
+jointController::jointController(uint32_t canID, float initPos)
 {
-	ID = canID;
+	canTX.len = 8;
+	canTX.id = canID;
 }
 
 jointController::~jointController()
@@ -65,12 +67,13 @@ jointController::~jointController()
 void jointController::powerOn(){};
 void jointController::powerOff(){};
 
-legController::legController(int canID[3], int initPos[3], float length, bool legType)
+legController::legController(uint32_t canID[3], int initPos[3], float length, bool legType)
 {
 	abad = new jointController(canID[0], initPos[0]);
 	hip = new jointController(canID[1], initPos[1]);
 	knee = new jointController(canID[2], initPos[2]);
 	type = legType;
+	canRX.len = 6;
 }
 
 legController::~legController()
@@ -78,6 +81,42 @@ legController::~legController()
 	delete abad;
 	delete hip;
 	delete knee;
+}
+void legController::unpackReply(CANMessage msg)
+{
+	/// unpack ints from can buffer ///
+	uint16_t id = msg.buf[0];
+	if ((type == FRONT_LEG && id > 4) || (type == BACK_LEG && id < 4))
+		return;
+	uint16_t pInt = (msg.buf[1] << 8) | msg.buf[2];
+	uint16_t vInt = (msg.buf[3] << 4) | (msg.buf[4] >> 4);
+	uint16_t iInt = ((msg.buf[4] & 0xF) << 8) | msg.buf[5];
+	/// convert uints to floats ///
+	float p = uint_to_float(pInt, P_MIN, P_MAX, 16);
+	float v = uint_to_float(vInt, V_MIN, V_MAX, 12);
+	float t = uint_to_float(iInt, -T_MAX, T_MAX, 12);
+
+	if (id == 1 || id == 4)
+	{
+		abad->pEst = p;
+		abad->vEst = v;
+		abad->tEst = t;
+	}
+	else if (id == 2 || id == 5)
+	{
+		hip->pEst = p;
+		hip->vEst = v;
+		hip->tEst = t;
+	}
+	else if (id == 3 || id == 6)
+	{
+		knee->pEst = p;
+		knee->vEst = v;
+		knee->tEst = t;
+	}
+}
+void legController::packAll()
+{
 }
 
 void legController::powerOn()
@@ -96,19 +135,18 @@ void legController::CANInit()
 {
 	if (isCANInit)
 		return;
-	CANbus0.begin();
+	//CANbus0.begin();
 }
 
 void legController::forwardKine()
 {
-	if (type = FRONT_LEG)
+	if (type == FRONT_LEG)
 		posEst(0) = -cos(hip->pEst) * upperLength - cos(hip->pEst + knee->pEst) * lowerLength + baseLength;
-
 	else
 		posEst(0) = -cos(hip->pEst) * upperLength - cos(hip->pEst + knee->pEst) * lowerLength - baseLength;
 	float L = -sin(hip->pEst) * upperLength - sin(hip->pEst + knee->pEst);
-	posEst(1) = sin(abad->pEst) * baseLength;
-	posEst(2) = cos(abad->pEst) * baseLength;
+	posEst(1) = sin(abad->pEst) * L;
+	posEst(2) = cos(abad->pEst) * L;
 }
 
 #ifdef DEBUG_LEG
