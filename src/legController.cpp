@@ -140,6 +140,49 @@ void legController::writeAll()
 	}
 }
 
+void legController::zeroAll()
+{
+	for (int i = 0; i < 7; i++)
+	{
+		abad->txMsg.buf[i] = 0xFF;
+		hip->txMsg.buf[i] = 0xFF;
+		knee->txMsg.buf[i] = 0xFF;
+	}
+	abad->txMsg.buf[7] = 0xFE;
+	hip->txMsg.buf[7] = 0xFE;
+	knee->txMsg.buf[7] = 0xFE;
+
+	writeAll();
+}
+void legController::motorOnAll()
+{
+	for (int i = 0; i < 7; i++)
+	{
+		abad->txMsg.buf[i] = 0xFF;
+		hip->txMsg.buf[i] = 0xFF;
+		knee->txMsg.buf[i] = 0xFF;
+	}
+	abad->txMsg.buf[7] = 0xFC;
+	hip->txMsg.buf[7] = 0xFC;
+	knee->txMsg.buf[7] = 0xFC;
+
+	writeAll();
+}
+void legController::motorOffAll()
+{
+	for (int i = 0; i < 7; i++)
+	{
+		abad->txMsg.buf[i] = 0xFF;
+		hip->txMsg.buf[i] = 0xFF;
+		knee->txMsg.buf[i] = 0xFF;
+	}
+	abad->txMsg.buf[7] = 0xFD;
+	hip->txMsg.buf[7] = 0xFD;
+	knee->txMsg.buf[7] = 0xFD;
+
+	//writeAll();
+}
+
 void legController::CANInit()
 {
 	if (isCANInit)

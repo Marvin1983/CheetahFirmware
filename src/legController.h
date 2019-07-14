@@ -47,6 +47,9 @@ public:
 	void unpackReply(CAN_message_t msg);
 	void packAll();
 	void writeAll();
+	void zeroAll();
+	void motorOnAll();
+	void motorOffAll();
 	void forwardKine();
 };
 
