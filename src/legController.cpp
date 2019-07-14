@@ -63,11 +63,16 @@ jointController::~jointController()
 {
 }
 
-legController::legController(uint32_t canID[3], int initPos[3], float length, int legType, int CANPort)
+legController::legController(uint32_t canID[3], float initPos[3], float length[3], int legType, int CANPort)
 {
 	abad = new jointController(canID[0], initPos[0]);
 	hip = new jointController(canID[1], initPos[1]);
 	knee = new jointController(canID[2], initPos[2]);
+
+	baseLength = length[0];
+	upperLength = length[1];
+	lowerLength = length[2];
+
 	type = legType;
 	port = CANPort;
 	rxMsg.len = 6;

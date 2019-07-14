@@ -1,11 +1,11 @@
 #ifndef LEGCONTROLLER_H
 #define LEGCONTROLLER_H
 #include <FlexCAN.h>
+#include <Eigen.h>
+#include <Eigen/Core>
 
 #include "fastMath.h"
 
-#include <Eigen.h>
-#include <Eigen/Core>
 using namespace Eigen;
 
 class jointController
@@ -40,7 +40,7 @@ public:
 
 	bool isContact;
 	Vector3f posEst, velocityEst, forceEst; //the estimate position, velocity, force of feet
-	legController(uint32_t canID[3], int initPos[3], float length, int legType, int CANPort);
+	legController(uint32_t canID[3], float initPos[3], float length[3], int legType, int CANPort);
 	~legController();
 	void CANInit();
 
