@@ -25,6 +25,7 @@
 #define BACK_LEG 1
 #define RX_LEN 66
 #define TX_LEN 66
-
+#define CAN_0 0
+#define CAN_1 1
 //------------------------------------------------------------------------------
 #endif

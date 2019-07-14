@@ -7,7 +7,6 @@
 #include <Eigen/Core>
 
 using namespace Eigen;
-
 FlexCAN CANbus0(1000000, 0);
 FlexCAN CANbus1(1000000, 1);
 
@@ -28,7 +27,7 @@ FlexCAN CANbus1(1000000, 1);
 /// 6: [kd[3-0], torque[11-8]]
 /// 7: [torque[7-0]]
 
-void jointController::packCmd(CANMessage *msg)
+void jointController::packCmd()
 {
 
 	/// limit data to be within bounds ///
@@ -44,36 +43,34 @@ void jointController::packCmd(CANMessage *msg)
 	uint16_t kdInt = float_to_uint(kd, KD_MIN, KD_MAX, 12);
 	uint16_t tInt = float_to_uint(tFF, T_MIN, T_MAX, 12);
 	/// pack ints into the can buffer ///
-	msg->buf[0] = pInt >> 8;
-	msg->buf[1] = pInt & 0xFF;
-	msg->buf[2] = vInt >> 4;
-	msg->buf[3] = ((vInt & 0xF) << 4) | (kpInt >> 8);
-	msg->buf[4] = kpInt & 0xFF;
-	msg->buf[5] = kdInt >> 4;
-	msg->buf[6] = ((kdInt & 0xF) << 4) | (tInt >> 8);
-	msg->buf[7] = tInt & 0xff;
+	txMsg.buf[0] = pInt >> 8;
+	txMsg.buf[1] = pInt & 0xFF;
+	txMsg.buf[2] = vInt >> 4;
+	txMsg.buf[3] = ((vInt & 0xF) << 4) | (kpInt >> 8);
+	txMsg.buf[4] = kpInt & 0xFF;
+	txMsg.buf[5] = kdInt >> 4;
+	txMsg.buf[6] = ((kdInt & 0xF) << 4) | (tInt >> 8);
+	txMsg.buf[7] = tInt & 0xff;
 }
 
 jointController::jointController(uint32_t canID, float initPos)
 {
-	canTX.len = 8;
-	canTX.id = canID;
+	txMsg.len = 8;
+	txMsg.id = canID;
 }
 
 jointController::~jointController()
 {
 }
 
-void jointController::powerOn(){};
-void jointController::powerOff(){};
-
-legController::legController(uint32_t canID[3], int initPos[3], float length, bool legType)
+legController::legController(uint32_t canID[3], int initPos[3], float length, int legType, int CANPort)
 {
 	abad = new jointController(canID[0], initPos[0]);
 	hip = new jointController(canID[1], initPos[1]);
 	knee = new jointController(canID[2], initPos[2]);
 	type = legType;
-	canRX.len = 6;
+	port = CANPort;
+	rxMsg.len = 6;
 }
 
 legController::~legController()
@@ -82,7 +79,7 @@ legController::~legController()
 	delete hip;
 	delete knee;
 }
-void legController::unpackReply(CANMessage msg)
+void legController::unpackReply(CAN_message_t msg)
 {
 	/// unpack ints from can buffer ///
 	uint16_t id = msg.buf[0];
@@ -117,25 +114,38 @@ void legController::unpackReply(CANMessage msg)
 }
 void legController::packAll()
 {
+	abad->packCmd();
+	hip->packCmd();
+	knee->packCmd();
+}
+void legController::writeAll()
+{
+	if (port == CAN_0)
+	{
+		CANbus0.write(abad->txMsg);
+		delayMicroseconds(1);
+		CANbus0.write(hip->txMsg);
+		delayMicroseconds(1);
+		CANbus0.write(knee->txMsg);
+		delayMicroseconds(1);
+	}
+	else if (port == CAN_1)
+	{
+		CANbus1.write(abad->txMsg);
+		delayMicroseconds(1);
+		CANbus1.write(hip->txMsg);
+		delayMicroseconds(1);
+		CANbus1.write(knee->txMsg);
+		delayMicroseconds(1);
+	}
 }
 
-void legController::powerOn()
-{
-	abad->powerOn();
-	hip->powerOn();
-	knee->powerOn();
-}
-void legController::powerOff()
-{
-	abad->powerOff();
-	hip->powerOff();
-	knee->powerOff();
-}
 void legController::CANInit()
 {
 	if (isCANInit)
 		return;
-	//CANbus0.begin();
+	CANbus0.begin();
+	CANbus1.begin();
 }
 
 void legController::forwardKine()
