@@ -1,8 +1,10 @@
 #ifndef LEGCONTROLLER_H
 #define LEGCONTROLLER_H
 #include <FlexCAN.h>
+
 #include <Eigen.h>
 #include <Eigen/Core>
+using namespace Eigen;
 
 extern FlexCAN CANbus0;
 
@@ -14,36 +16,40 @@ private:
 public:
 	float kp, kd;						  // position gain and velocity gain
 	float posEst, velocityEst, touqueEst; // estimate position, velocity, touque
-	float posRef, velocityRef, touqueRef; // reference position, velocity, touque
+	float posDis, velocityDis, touqueDis; // reference position, velocity, touque
 
 	motorController(int canID, float initPos);
 	~motorController();
 	void powerOn();
 	void powerOff();
-	void send();
-	void receive();
 };
 
 class legController
 {
 private:
 	bool isCANInit;
+	bool type;
+
 	float rollOffset, hipOffset, kneeOffset;
+	float baseLength, upperLength, lowerLength; //WARNING!!!!!! the upper length is the distance between hip joint and knee joint, the lower length is the distance between knee joint and feet!!!!!
 
 public:
-	motorController *roll;
+	motorController *abad;
 	motorController *hip;
 	motorController *knee;
 
 	bool isContact;
-
-	legController(int canID[3], int initPos[3]);
+	Vector3f posEst, velocityEst, forceEst; //the estimate position, velocity, force of feet
+	legController(int canID[3], int initPos[3], float length, bool legType);
 	~legController();
 	void powerOn();
 	void powerOff();
 	void CANInit();
+	void forwardKine();
 };
 
-extern void print_mtxf(const Eigen::MatrixXf &X);
+#ifdef DEBUG_LEG
+void print_mtxf(const MatrixXf &X);
+#endif
 
 #endif
