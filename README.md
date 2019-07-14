@@ -1,2 +1,2 @@
-# openCheetah
-The firmware of openCheetah
+# OpenCheetah
+The firmware of Open Cheetah Project
