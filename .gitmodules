@@ -1,1 +1,10 @@
 
+[submodule "lib/Eigen"]
+	path = lib/Eigen
+	url = git@github.com:bolderflight/Eigen.git
+[submodule "lib/FlexCAN_Library"]
+	path = lib/FlexCAN_Library
+	url = git@github.com:pawelsky/FlexCAN_Library.git
+[submodule "lib/ChRt"]
+	path = lib/ChRt
+	url = git@github.com:greiman/ChRt.git
