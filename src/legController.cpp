@@ -1,6 +1,7 @@
 #include "legController.h"
 #include "Arduino.h"
 #include "config.h"
+#include "fastMath.h"
 #include <FlexCAN.h>
 #include <Eigen.h>
 #include <Eigen/Core>
@@ -9,23 +10,66 @@ using namespace Eigen;
 
 FlexCAN CANbus0(1000000, 0);
 
-motorController::motorController(int canID, float initPos)
+/// CAN Command Packet Structure ///
+/// 16 bit position command, between -4*pi and 4*pi
+/// 12 bit velocity command, between -30 and + 30 rad/s
+/// 12 bit kp, between 0 and 500 N-m/rad
+/// 12 bit kd, between 0 and 100 N-m*s/rad
+/// 12 bit feed forward torque, between -18 and 18 N-m
+/// CAN Packet is 8 8-bit words
+/// Formatted as follows.  For each quantity, bit 0 is LSB
+/// 0: [position[15-8]]
+/// 1: [position[7-0]]
+/// 2: [velocity[11-4]]
+/// 3: [velocity[3-0], kp[11-8]]
+/// 4: [kp[7-0]]
+/// 5: [kd[11-4]]
+/// 6: [kd[3-0], torque[11-8]]
+/// 7: [torque[7-0]]
+
+void jointController::packCmd(CAN_message_t *msg)
+{
+
+	/// limit data to be within bounds ///
+	float pDes = fminf(fmaxf(P_MIN, pDes), P_MAX);
+	float vDes = fminf(fmaxf(V_MIN, vDes), V_MAX);
+	float kp = fminf(fmaxf(KP_MIN, kp), KP_MAX);
+	float kd = fminf(fmaxf(KD_MIN, kd), KD_MAX);
+	float tFF = fminf(fmaxf(T_MIN, tFF), T_MAX);
+	/// convert floats to unsigned ints ///
+	uint16_t pInt = float_to_uint(pDes, P_MIN, P_MAX, 16);
+	uint16_t vInt = float_to_uint(vDes, V_MIN, V_MAX, 12);
+	uint16_t kpInt = float_to_uint(kp, KP_MIN, KP_MAX, 12);
+	uint16_t kdInt = float_to_uint(kd, KD_MIN, KD_MAX, 12);
+	uint16_t tInt = float_to_uint(tFF, T_MIN, T_MAX, 12);
+	/// pack ints into the can buffer ///
+	msg->buf[0] = pInt >> 8;
+	msg->buf[1] = pInt & 0xFF;
+	msg->buf[2] = vInt >> 4;
+	msg->buf[3] = ((vInt & 0xF) << 4) | (kpInt >> 8);
+	msg->buf[4] = kpInt & 0xFF;
+	msg->buf[5] = kdInt >> 4;
+	msg->buf[6] = ((kdInt & 0xF) << 4) | (tInt >> 8);
+	msg->buf[7] = tInt & 0xff;
+}
+
+jointController::jointController(int canID, float initPos)
 {
 	ID = canID;
 }
 
-motorController::~motorController()
+jointController::~jointController()
 {
 }
 
-void motorController::powerOn(){};
-void motorController::powerOff(){};
+void jointController::powerOn(){};
+void jointController::powerOff(){};
 
 legController::legController(int canID[3], int initPos[3], float length, bool legType)
 {
-	abad = new motorController(canID[0], initPos[0]);
-	hip = new motorController(canID[1], initPos[1]);
-	knee = new motorController(canID[2], initPos[2]);
+	abad = new jointController(canID[0], initPos[0]);
+	hip = new jointController(canID[1], initPos[1]);
+	knee = new jointController(canID[2], initPos[2]);
 	type = legType;
 }
 
@@ -58,13 +102,13 @@ void legController::CANInit()
 void legController::forwardKine()
 {
 	if (type = FRONT_LEG)
-		posEst(0) = -cos(hip->posEst) * upperLength - cos(hip->posEst + knee->posEst) * lowerLength + baseLength;
+		posEst(0) = -cos(hip->pEst) * upperLength - cos(hip->pEst + knee->pEst) * lowerLength + baseLength;
 
 	else
-		posEst(0) = -cos(hip->posEst) * upperLength - cos(hip->posEst + knee->posEst) * lowerLength - baseLength;
-	float L = -sin(hip->posEst) * upperLength - sin(hip->posEst + knee->posEst);
-	posEst(1) = sin(abad->posEst) * baseLength;
-	posEst(2) = cos(abad->posEst) * baseLength;
+		posEst(0) = -cos(hip->pEst) * upperLength - cos(hip->pEst + knee->pEst) * lowerLength - baseLength;
+	float L = -sin(hip->pEst) * upperLength - sin(hip->pEst + knee->pEst);
+	posEst(1) = sin(abad->pEst) * baseLength;
+	posEst(2) = cos(abad->pEst) * baseLength;
 }
 
 #ifdef DEBUG_LEG

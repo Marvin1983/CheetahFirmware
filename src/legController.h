@@ -2,24 +2,29 @@
 #define LEGCONTROLLER_H
 #include <FlexCAN.h>
 
+#include "fastMath.h"
+
 #include <Eigen.h>
 #include <Eigen/Core>
 using namespace Eigen;
 
 extern FlexCAN CANbus0;
 
-class motorController
+
+class jointController
 {
 private:
 	int ID;
 
 public:
-	float kp, kd;						  // position gain and velocity gain
-	float posEst, velocityEst, touqueEst; // estimate position, velocity, touque
-	float posDis, velocityDis, touqueDis; // reference position, velocity, touque
+	float kp, kd;			// position gain and velocity gain
+	float pEst, vEst, tEst; // estimate position, velocity, touque
+	float pDes, vDes, tFF;  // reference position, velocity, touque
 
-	motorController(int canID, float initPos);
-	~motorController();
+	jointController(int canID, float initPos);
+	~jointController();
+	void packCmd(CAN_message_t *msg);
+
 	void powerOn();
 	void powerOff();
 };
@@ -34,9 +39,9 @@ private:
 	float baseLength, upperLength, lowerLength; //WARNING!!!!!! the upper length is the distance between hip joint and knee joint, the lower length is the distance between knee joint and feet!!!!!
 
 public:
-	motorController *abad;
-	motorController *hip;
-	motorController *knee;
+	jointController *abad;
+	jointController *hip;
+	jointController *knee;
 
 	bool isContact;
 	Vector3f posEst, velocityEst, forceEst; //the estimate position, velocity, force of feet
