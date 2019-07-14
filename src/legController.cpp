@@ -2,6 +2,8 @@
 #include "Arduino.h"
 #include "config.h"
 #include <FlexCAN.h>
+#include <Eigen.h>
+#include <Eigen/Core>
 
 FlexCAN CANbus0(1000000, 0);
 
@@ -16,6 +18,8 @@ motorController::~motorController()
 
 void motorController::powerOn(){};
 void motorController::powerOff(){};
+void motorController::send(){};
+void motorController::receive(){};
 
 legController::legController(int canID[3], int initPos[3])
 {
@@ -26,7 +30,9 @@ legController::legController(int canID[3], int initPos[3])
 
 legController::~legController()
 {
-	delete roll, hip, knee;
+	delete roll;
+	delete hip;
+	delete knee;
 }
 
 void legController::powerOn()
@@ -41,9 +47,34 @@ void legController::powerOff()
 	hip->powerOff();
 	knee->powerOff();
 }
-void legController::canInit()
+void legController::CANInit()
 {
-	if (canIsInit)
+	if (isCANInit)
 		return;
 	CANbus0.begin();
+}
+
+void print_mtxf(const Eigen::MatrixXf &X)
+{
+	int i, j, nrow, ncol;
+
+	nrow = X.rows();
+	ncol = X.cols();
+
+	Serial.print("nrow: ");
+	Serial.println(nrow);
+	Serial.print("ncol: ");
+	Serial.println(ncol);
+	Serial.println();
+
+	for (i = 0; i < nrow; i++)
+	{
+		for (j = 0; j < ncol; j++)
+		{
+			Serial.print(X(i, j), 6); // print 6 decimal places
+			Serial.print(", ");
+		}
+		Serial.println();
+	}
+	Serial.println();
 }

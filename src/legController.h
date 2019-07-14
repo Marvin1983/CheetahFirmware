@@ -1,5 +1,8 @@
 #ifndef LEGCONTROLLER_H
 #define LEGCONTROLLER_H
+#include <FlexCAN.h>
+#include <Eigen.h>
+#include <Eigen/Core>
 
 extern FlexCAN CANbus0;
 
@@ -17,24 +20,30 @@ public:
 	~motorController();
 	void powerOn();
 	void powerOff();
+	void send();
+	void receive();
 };
 
 class legController
 {
 private:
-	bool canIsInit;
+	bool isCANInit;
+	float rollOffset, hipOffset, kneeOffset;
 
 public:
 	motorController *roll;
 	motorController *hip;
 	motorController *knee;
 
-	bool contact;
+	bool isContact;
+
 	legController(int canID[3], int initPos[3]);
 	~legController();
 	void powerOn();
 	void powerOff();
-	void canInit();
+	void CANInit();
 };
+
+extern void print_mtxf(const Eigen::MatrixXf &X);
 
 #endif

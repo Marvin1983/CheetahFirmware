@@ -7,3 +7,6 @@
 [submodule "lib/SdFat"]
 	path = lib/SdFat
 	url = git@github.com:greiman/SdFat.git
+[submodule "lib/Eigen"]
+	path = lib/Eigen
+	url = git@github.com:bolderflight/Eigen.git
