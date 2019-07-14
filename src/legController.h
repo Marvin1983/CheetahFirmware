@@ -1,34 +1,40 @@
 #ifndef LEGCONTROLLER_H
 #define LEGCONTROLLER_H
 
-class legController {
+extern FlexCAN CANbus0;
+
+class motorController
+{
 private:
-  class motorController {
-
-  private:
-    int canID;
-
-  public:
-    float posEst, speedEst, touqueEst; // estimate position, speed, touque
-    float kp, kd;
-    float posRef, speedEstRef, touqueRef; // reference position, speed, touque
-
-    motorController(int canID, float initPos);
-    ~motorController();
-
-  } roll, hip, knee;
+	int ID;
 
 public:
-  legController();
-  ~legController();
+	float kp, kd;						  // position gain and velocity gain
+	float posEst, velocityEst, touqueEst; // estimate position, velocity, touque
+	float posRef, velocityRef, touqueRef; // reference position, velocity, touque
+
+	motorController(int canID, float initPos);
+	~motorController();
+	void powerOn();
+	void powerOff();
 };
 
-legController::motorController::motorController(int canID, float initPos) {}
+class legController
+{
+private:
+	bool canIsInit;
 
-legController::motorController::~motorController() {}
+public:
+	motorController *roll;
+	motorController *hip;
+	motorController *knee;
 
-legController::legController() {}
-
-legController::~legController() {}
+	bool contact;
+	legController(int canID[3], int initPos[3]);
+	~legController();
+	void powerOn();
+	void powerOff();
+	void canInit();
+};
 
 #endif

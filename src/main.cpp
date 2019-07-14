@@ -1,10 +1,12 @@
 #include <Arduino.h>
+#include <config.h>
 #include <ChRt.h>
+#include <legController.h>
 
-void setup() {
-  // put your setup code here, to run once:
+void setup()
+{
 }
 
-void loop() {
-  // put your main code here, to run repeatedly:
+void loop()
+{
 }
