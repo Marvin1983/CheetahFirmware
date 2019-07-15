@@ -11,6 +11,22 @@ using namespace Eigen;
 FlexCAN CANbus0(1000000, 0);
 FlexCAN CANbus1(1000000, 1);
 
+struct MotorPDGain motorGain[] = {
+	//abad hip	 knee
+	//p d  p  d	 p  d
+	{1, 1, 1, 1, 1, 1}, //font left
+	{1, 1, 1, 1, 1, 1}, //font right
+	{1, 1, 1, 1, 1, 1}, //back left
+	{1, 1, 1, 1, 1, 1}, //back right
+};
+
+struct feetPDGain feetGain[] = {
+	{1, 1}, //font left	feet
+	{1, 1}, //font right feet
+	{1, 1}, //back left feet
+	{1, 1}, //back right feet
+};
+
 /// CAN Command Packet Structure ///
 /// 16 bit position command, between -4*pi and 4*pi
 /// 12 bit velocity command, between -30 and + 30 rad/s
@@ -64,7 +80,7 @@ jointController::~jointController()
 {
 }
 
-legController::legController(uint32_t canID[3], float initPos[3], float length[2], float offset[2], int legType, int CANPort)
+legController::legController(uint32_t canID[3], float initPos[3], float length[2], float offset[2], int legID, int CANPort)
 {
 	abad = new jointController(canID[0], initPos[0]);
 	hip = new jointController(canID[1], initPos[1]);
@@ -75,9 +91,12 @@ legController::legController(uint32_t canID[3], float initPos[3], float length[2
 
 	baseOffset[0] = offset[0];
 	baseOffset[1] = offset[1];
-	type = legType;
+	id = legID;
 	port = CANPort;
 	rxMsg.len = 6;
+
+	CANInit();
+	zeroAll();
 }
 
 legController::~legController()
@@ -86,11 +105,19 @@ legController::~legController()
 	delete hip;
 	delete knee;
 }
+void legController::CANInit()
+{
+	if (isCANInit)
+		return;
+	CANbus0.begin();
+	CANbus1.begin();
+}
+
 void legController::unpackReply(CAN_message_t msg)
 {
 	/// unpack ints from can buffer ///
-	uint16_t id = msg.buf[0];
-	if ((type == FRONT_LEG && id > 4) || (type == BACK_LEG && id < 4))
+	uint16_t msgId = msg.buf[0];
+	if (((id == FLLegID || id == FRLegID) && msgId > 4) || ((id == BLLegID || id == BRLegID) && msgId < 4))
 		return;
 	uint16_t pInt = (msg.buf[1] << 8) | msg.buf[2];
 	uint16_t vInt = (msg.buf[3] << 4) | (msg.buf[4] >> 4);
@@ -197,12 +224,40 @@ void legController::motorOffAll()
 	//writeAll();
 }
 
-void legController::CANInit()
+void legController::changesMode(int legMode)
 {
-	if (isCANInit)
-		return;
-	CANbus0.begin();
-	CANbus1.begin();
+	mode = legMode;
+	switch (legMode)
+	{
+	case FEET_MODE:
+		abad->kp = 0;
+		abad->kd = 0;
+		hip->kp = 0;
+		hip->kd = 0;
+		knee->kp = 0;
+		knee->kd = 0;
+		kp = feetGain[id].kpLeg;
+		kd = feetGain[id].kdLeg;
+		break;
+	case FORCE_MODE:
+		abad->kp = 0;
+		abad->kd = 0;
+		hip->kp = 0;
+		hip->kd = 0;
+		knee->kp = 0;
+		knee->kd = 0;
+		kp = 0;
+		kd = 0;
+		break;
+	case MOTOR_MODE:
+		abad->kp = motorGain[id].kpAbad;
+		abad->kd = motorGain[id].kdAbad;
+		hip->kp = motorGain[id].kpHip;
+		hip->kd = motorGain[id].kdHip;
+		knee->kp = motorGain[id].kpKnee;
+		knee->kd = motorGain[id].kdKnee;
+		break;
+	}
 }
 
 void legController::updateState() //fowrd kinematic
@@ -216,7 +271,7 @@ void legController::updateState() //fowrd kinematic
 	static float c12 = cos(hip->pEst + knee->pEst);
 	static float s12 = sin(hip->pEst + knee->pEst);
 	pEst(0) = -c1 * l1 - c12 * l2 + baseOffset[0];
-	float L = -s1 * l1 - s12 * l2;
+	static float L = -s1 * l1 - s12 * l2;
 	pEst(1) = s0 * L + baseOffset[1];
 	pEst(2) = c0 * L;
 	jacobian << 0, s1 * l1 + s12 * l2, s12 * l2,
@@ -227,6 +282,32 @@ void legController::updateState() //fowrd kinematic
 	vEst = jacobian * vEstM;
 	fEst = jacobian * tEstM;
 }
+
+void legController::control()
+{
+	switch (mode)
+	{
+	case FEET_MODE:
+		fOut = kp * (pDes - pEst) + kd * (vDes - vEst) + fFF;
+		tOut = inverseJacobian * fOut;
+		abad->tFF = tOut(0);
+		hip->tFF = tOut(1);
+		knee->tFF = tOut(2);
+		packAll();
+		writeAll();
+		break;
+	case FORCE_MODE:
+		fOut = fFF;
+		tOut = inverseJacobian * fOut;
+		abad->tFF = tOut(0);
+		hip->tFF = tOut(1);
+		knee->tFF = tOut(2);
+		packAll();
+		writeAll();
+		break;
+	}
+}
+
 #ifdef DEBUG_LEG
 void print_mtxf(const MatrixXf &X)
 {
