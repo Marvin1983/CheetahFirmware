@@ -5,6 +5,7 @@
 #include <FlexCAN.h>
 #include <Eigen.h>
 #include <Eigen/Core>
+#include <Eigen/LU>
 
 using namespace Eigen;
 FlexCAN CANbus0(1000000, 0);
@@ -69,8 +70,8 @@ legController::legController(uint32_t canID[3], float initPos[3], float length[2
 	hip = new jointController(canID[1], initPos[1]);
 	knee = new jointController(canID[2], initPos[2]);
 
-	upperLength = length[0];
-	lowerLength = length[1];
+	l1 = length[0];
+	l2 = length[1];
 
 	baseOffset[0] = offset[0];
 	baseOffset[1] = offset[1];
@@ -104,20 +105,27 @@ void legController::unpackReply(CAN_message_t msg)
 		abad->pEst = p;
 		abad->vEst = v;
 		abad->tEst = t;
+		vEstM(0) = v;
+		tEstM(0) = t;
 	}
 	else if (id == 2 || id == 5)
 	{
 		hip->pEst = p;
 		hip->vEst = v;
 		hip->tEst = t;
+		vEstM(1) = v;
+		tEstM(1) = t;
 	}
 	else if (id == 3 || id == 6)
 	{
 		knee->pEst = p;
 		knee->vEst = v;
 		knee->tEst = t;
+		vEstM(2) = v;
+		tEstM(2) = t;
 	}
 }
+
 void legController::packAll()
 {
 	abad->packCmd();
@@ -197,18 +205,28 @@ void legController::CANInit()
 	CANbus1.begin();
 }
 
-void legController::updatePos() //fowrd kinematic
+void legController::updateState() //fowrd kinematic
 {
-	pEst(0) = -cos(hip->pEst) * baseOffset[0] - cos(hip->pEst + knee->pEst) * lowerLength + baseOffset[0];
-	float L = -sin(hip->pEst) * upperLength - sin(hip->pEst + knee->pEst);
-	pEst(1) = sin(abad->pEst) * L + baseOffset[1];
-	pEst(2) = cos(abad->pEst) * L + baseOffset[1];
-}
 
-void legController::updateForc()
-{
-}
+	static float c0 = cos(abad->pEst);
+	static float s0 = sin(abad->pEst);
+	static float c1 = cos(hip->pEst);
+	static float s1 = sin(hip->pEst);
 
+	static float c12 = cos(hip->pEst + knee->pEst);
+	static float s12 = sin(hip->pEst + knee->pEst);
+	pEst(0) = -c1 * l1 - c12 * l2 + baseOffset[0];
+	float L = -s1 * l1 - s12 * l2;
+	pEst(1) = s0 * L + baseOffset[1];
+	pEst(2) = c0 * L;
+	jacobian << 0, s1 * l1 + s12 * l2, s12 * l2,
+		-c0 * (s1 * l1 + s12 * l2 + s0 * baseOffset[0]), -s0 * (c1 * l1 + c12 * l2), -c0 * c12 * l2,
+		s0 * (s1 * l1 + s12 * l2), -c0 * (c1 * l1 + c12 * l2), -c0 * c12 * l2;
+	if (jacobian.determinant())
+		inverseJacobian = jacobian.inverse();
+	vEst = jacobian * vEstM;
+	fEst = jacobian * tEstM;
+}
 #ifdef DEBUG_LEG
 void print_mtxf(const MatrixXf &X)
 {

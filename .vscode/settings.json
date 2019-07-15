@@ -2,5 +2,8 @@
     "terminal.integrated.env.osx": {
         "PATH": "/Users/liaoqiayuan/.platformio/penv/bin:/Users/liaoqiayuan/.platformio/penv:/anaconda3/bin:/anaconda3/condabin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/TeX/texbin:/usr/local/gcc_arm/gcc-arm-none-eabi-8-2018-q4-major/bin:/Users/liaoqiayuan/Desktop/platform-tools/",
         "PLATFORMIO_CALLER": "vscode"
-    }
+	},
+	"files.associations": {
+		"core": "cpp"
+	}
 }
