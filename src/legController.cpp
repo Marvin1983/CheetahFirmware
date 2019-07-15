@@ -63,16 +63,17 @@ jointController::~jointController()
 {
 }
 
-legController::legController(uint32_t canID[3], float initPos[3], float length[3], int legType, int CANPort)
+legController::legController(uint32_t canID[3], float initPos[3], float length[2], float offset[2], int legType, int CANPort)
 {
 	abad = new jointController(canID[0], initPos[0]);
 	hip = new jointController(canID[1], initPos[1]);
 	knee = new jointController(canID[2], initPos[2]);
 
-	baseLength = length[0];
-	upperLength = length[1];
-	lowerLength = length[2];
+	upperLength = length[0];
+	lowerLength = length[1];
 
+	baseOffset[0] = offset[0];
+	baseOffset[1] = offset[1];
 	type = legType;
 	port = CANPort;
 	rxMsg.len = 6;
@@ -196,15 +197,16 @@ void legController::CANInit()
 	CANbus1.begin();
 }
 
-void legController::forwardKine()
+void legController::updatePos() //fowrd kinematic
 {
-	if (type == FRONT_LEG)
-		posEst(0) = -cos(hip->pEst) * upperLength - cos(hip->pEst + knee->pEst) * lowerLength + baseLength;
-	else
-		posEst(0) = -cos(hip->pEst) * upperLength - cos(hip->pEst + knee->pEst) * lowerLength - baseLength;
+	pEst(0) = -cos(hip->pEst) * baseOffset[0] - cos(hip->pEst + knee->pEst) * lowerLength + baseOffset[0];
 	float L = -sin(hip->pEst) * upperLength - sin(hip->pEst + knee->pEst);
-	posEst(1) = sin(abad->pEst) * L;
-	posEst(2) = cos(abad->pEst) * L;
+	pEst(1) = sin(abad->pEst) * L + baseOffset[1];
+	pEst(2) = cos(abad->pEst) * L + baseOffset[1];
+}
+
+void legController::updateForc()
+{
 }
 
 #ifdef DEBUG_LEG

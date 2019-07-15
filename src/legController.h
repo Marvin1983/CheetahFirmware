@@ -11,6 +11,8 @@ using namespace Eigen;
 class jointController
 {
 private:
+	int mode;
+
 public:
 	CAN_message_t txMsg;
 	float kp, kd;			// position gain and velocity gain
@@ -28,19 +30,21 @@ private:
 	bool isCANInit;
 	int type;
 	int port;
+	int mode;
 	CAN_message_t rxMsg; //receive message
 
-	float rollOffset, hipOffset, kneeOffset;
-	float baseLength, upperLength, lowerLength; //WARNING!!!!!! the upper length is the distance between hip joint and knee joint, the lower length is the distance between knee joint and feet!!!!!
-
+	float rollInit, hipInit, kneeInit; //the inital angle of three joint
+	float baseOffset[2], upperLength, lowerLength;
+	//WARNING!!!!!! the upper length is the distance between hip joint and knee joint, the lower length is the distance between knee joint and feet!!!!!
+	//baseOffset[0]: X Offset ;baseOffset[1]: Y OffSet
 public:
 	jointController *abad;
 	jointController *hip;
 	jointController *knee;
 
 	bool isContact;
-	Vector3f posEst, velocityEst, forceEst; //the estimate position, velocity, force of feet
-	legController(uint32_t canID[3], float initPos[3], float length[3], int legType, int CANPort);
+	Vector3f pEst, vEst, fEst; //the estimate position, velocity, force of feet
+	legController(uint32_t canID[3], float initPos[3], float length[2], float offset, int legType, int CANPort);
 	~legController();
 	void CANInit();
 
@@ -50,7 +54,8 @@ public:
 	void zeroAll();
 	void motorOnAll();
 	void motorOffAll();
-	void forwardKine();
+	void updatePos();
+	void updateForc();
 };
 
 #ifdef DEBUG_LEG
