@@ -74,7 +74,7 @@ legController::legController(int legID)
 	baseOffset[1] = legLength[id].baseOffset1;
 	l1 = legLength[id].upperLength;
 	l2 = legLength[id].lowerLength;
-	port = CANPort[id];
+	port = legCANPort[id];
 	rxMsg.len = 6;
 
 	CANInit();

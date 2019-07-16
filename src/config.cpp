@@ -36,6 +36,18 @@ struct legLength_t legLength[] = {
 	{-0.02f, 0.02f, 0.15f, 0.15f}, //back left
 	{-0.02f, -0.02f, 0.15f, 0.15f} //back right
 };
-int CANPort[4] =
+int legCANPort[4] =
 	//FL, FR, BL,BR
 	{0, 0, 1, 1};
+
+///Thread///
+
+typedef enum priorityThread
+{
+	legThread = 5,
+	gaitThread = 4,
+	imuThread = 3,
+	logThread = 2,
+	ledThread = 0,
+
+} priorityThread;

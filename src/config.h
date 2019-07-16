@@ -2,7 +2,7 @@
 #define CONFIG_H
 
 ///main///
-#define SERIAL_BAUD 921600
+#define SERIAL_BAUD 230400
 
 ///debug///
 
@@ -74,6 +74,9 @@ extern struct motorPDGain_t motorGain[4];
 extern struct motorInitPos_t motorInitPos[4];
 extern struct feetPDGain_t feetGain[4];
 extern struct legLength_t legLength[4];
-extern int CANPort[4];
+extern int legCANPort[4];
 
+///Thread///
+
+extern enum priorityThread_t priorityThread;
 #endif

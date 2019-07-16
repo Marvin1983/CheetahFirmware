@@ -17,12 +17,18 @@ static THD_FUNCTION(BlinkThread, arg)
 {
 	(void)arg;
 	pinMode(LED_BUILTIN, OUTPUT);
+	systime_t wakeTime = chVTGetSystemTimeX(); // T0
 	while (true)
 	{
+		wakeTime += MS2ST(1000);
+		chThdSleepUntil(wakeTime);
+
 		digitalWrite(LED_BUILTIN, HIGH);
-		chThdSleepMilliseconds(500);
+
+		wakeTime += MS2ST(500);
+		chThdSleepUntil(wakeTime);
+
 		digitalWrite(LED_BUILTIN, LOW);
-		chThdSleepMilliseconds(500);
 	}
 }
 
