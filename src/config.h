@@ -1,6 +1,9 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+///main///
+#define SERIAL_BAUD 921600
+
 ///debug///
 
 //#define DEBUG_LEG
