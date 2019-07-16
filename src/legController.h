@@ -1,10 +1,11 @@
 #ifndef LEGCONTROLLER_H
 #define LEGCONTROLLER_H
+#include "fastMath.h"
 #include <FlexCAN.h>
 #include <Eigen.h>
 #include <Eigen/Core>
 #include <Eigen/LU>
-#include "fastMath.h"
+#include <ChRt.h>
 
 using namespace Eigen;
 
@@ -65,6 +66,9 @@ public:
 
 	void control();
 };
+
+extern THD_WORKING_AREA(waLegThread, 2048);
+extern THD_FUNCTION(legThread, arg);
 
 #ifdef DEBUG_LEG
 void print_mtxf(const MatrixXf &X);

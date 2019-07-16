@@ -11,7 +11,7 @@
 // BlinkThread: Blink the built-in led at 1Hz so you know if the Teensy is on.
 
 // 64 byte stack beyond task switch and interrupt needs.
-static THD_WORKING_AREA(waBlinkThread, 32);
+static THD_WORKING_AREA(waBlinkThread, 64);
 
 static THD_FUNCTION(BlinkThread, arg)
 {
@@ -20,12 +20,12 @@ static THD_FUNCTION(BlinkThread, arg)
 	systime_t wakeTime = chVTGetSystemTimeX(); // T0
 	while (true)
 	{
-		wakeTime += MS2ST(250);
+		wakeTime += MS2ST(500);
 		chThdSleepUntil(wakeTime);
 
 		digitalWrite(LED_BUILTIN, HIGH);
 
-		wakeTime += MS2ST(250);
+		wakeTime += MS2ST(500);
 		chThdSleepUntil(wakeTime);
 
 		digitalWrite(LED_BUILTIN, LOW);
@@ -41,7 +41,8 @@ void chSetup()
 	// This is the most important part of the setup
 
 	// Blink thread: blinks the onboard LED
-	//chThdCreateStatic(waBlinkThread, sizeof(waBlinkThread), NORMALPRIO, BlinkThread, NULL);
+	chThdCreateStatic(waBlinkThread, sizeof(waBlinkThread), NORMALPRIO, BlinkThread, NULL);
+	chThdCreateStatic(waLegThread, sizeof(waLegThread), NORMALPRIO + P_LEG_THREAD, legThread, NULL);
 }
 
 #ifdef DEBUG_THREAD
@@ -50,7 +51,7 @@ void printUnusedStack()
 	Serial.print(F("Unused Stack: "));
 	Serial.print(chUnusedThreadStack(waBlinkThread, sizeof(waBlinkThread)));
 	Serial.print(' ');
-	//Serial.print(chUnusedThreadStack(waThread2, sizeof(waThread2)));
+	Serial.print(chUnusedThreadStack(waLegThread, sizeof(waLegThread)));
 	Serial.print(' ');
 	Serial.print(chUnusedMainStack());
 	Serial.println();

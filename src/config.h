@@ -78,5 +78,6 @@ extern struct legLength_t legLength[4];
 extern int legCANPort[4];
 
 ///Thread///
-
+#define F_LEG_THREAD 500 //Hz
+#define P_LEG_THREAD 5   //Priority
 #endif

@@ -6,6 +6,7 @@
 #include <Eigen.h>
 #include <Eigen/Core>
 #include <Eigen/LU>
+#include <ChRt.h>
 
 using namespace Eigen;
 FlexCAN CANbus0(1000000, 0);
@@ -287,6 +288,19 @@ void legController::control()
 		packAll();
 		writeAll();
 		break;
+	}
+}
+
+THD_WORKING_AREA(waLegThread, 2048);
+
+THD_FUNCTION(legThread, arg)
+{
+	(void)arg;
+	systime_t wakeTime = chVTGetSystemTimeX(); // T0
+	while (true)
+	{
+		wakeTime += MS2ST(1 / F_LEG_THREAD);
+		chThdSleepUntil(wakeTime);
 	}
 }
 
