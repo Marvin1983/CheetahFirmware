@@ -11,21 +11,45 @@ using namespace Eigen;
 FlexCAN CANbus0(1000000, 0);
 FlexCAN CANbus1(1000000, 1);
 
-struct MotorPDGain motorGain[] = {
+struct motorPDGain_t motorGain[] = {
+	//	abad 		hip	 		knee
+	//p    d	 p     d	 p     d
+	{1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f}, //font left
+	{1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f}, //font right
+	{1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f}, //back left
+	{1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f}  //back right
+};
+struct motorInitPos_t motorInitPos[] = {
 	//abad hip	 knee
-	//p d  p  d	 p  d
-	{1, 1, 1, 1, 1, 1}, //font left
-	{1, 1, 1, 1, 1, 1}, //font right
-	{1, 1, 1, 1, 1, 1}, //back left
-	{1, 1, 1, 1, 1, 1}, //back right
+	{0.0f, 0.0f, PI / 6.0f}, //font left
+	{0.0f, 0.0f, PI / 6.0f}, //font right
+	{0.0f, 0.0f, PI / 6.0f}, //back left
+	{0.0f, 0.0f, PI / 6.0f}  //back right
+};
+struct motorCANID_t motorCANID[4]{
+	//abad,hip,knee
+	{1, 2, 3}, //font left
+	{4, 5, 6}, //font right
+	{1, 2, 3}, //back left
+	{4, 5, 6}  //back right
+};
+struct feetPDGain_t feetGain[] = {
+	{1.0f, 1.0f}, //font left	feet
+	{1.0f, 1.0f}, //font right feet
+	{1.0f, 1.0f}, //back left feet
+	{1.0f, 1.0f}  //back right feet
+};
+struct legLength_t legLength[] = {
+	//baseOffset0, baseOffset1, upperLength,lowerLength
+	{0.02f, -0.02f, 0.15f, 0.15f}, //font left
+	{0.02f, 0.02f, 0.15f, 0.15f},  //font right
+	{-0.02f, 0.02f, 0.15f, 0.15f}, //back left
+	{-0.02f, -0.02f, 0.15f, 0.15f} //back right
 };
 
-struct feetPDGain feetGain[] = {
-	{1, 1}, //font left	feet
-	{1, 1}, //font right feet
-	{1, 1}, //back left feet
-	{1, 1}, //back right feet
-};
+int CANPort[4] =
+	//FL, FR, BL,BR
+	{0, 0, 1, 1};
 
 /// CAN Command Packet Structure ///
 /// 16 bit position command, between -4*pi and 4*pi
@@ -80,19 +104,17 @@ jointController::~jointController()
 {
 }
 
-legController::legController(uint32_t canID[3], float initPos[3], float length[2], float offset[2], int legID, int CANPort)
+legController::legController(int legID)
 {
-	abad = new jointController(canID[0], initPos[0]);
-	hip = new jointController(canID[1], initPos[1]);
-	knee = new jointController(canID[2], initPos[2]);
-
-	l1 = length[0];
-	l2 = length[1];
-
-	baseOffset[0] = offset[0];
-	baseOffset[1] = offset[1];
 	id = legID;
-	port = CANPort;
+	abad = new jointController(motorCANID[id].abad, motorInitPos[id].abad);
+	hip = new jointController(motorCANID[id].hip, motorInitPos[id].hip);
+	knee = new jointController(motorCANID[id].knee, motorInitPos[id].knee);
+	baseOffset[0] = legLength[id].baseOffset0;
+	baseOffset[1] = legLength[id].baseOffset1;
+	l1 = legLength[id].upperLength;
+	l2 = legLength[id].lowerLength;
+	port = CANPort[id];
 	rxMsg.len = 6;
 
 	CANInit();
@@ -117,7 +139,7 @@ void legController::unpackReply(CAN_message_t msg)
 {
 	/// unpack ints from can buffer ///
 	uint16_t msgId = msg.buf[0];
-	if (((id == FLLegID || id == FRLegID) && msgId > 4) || ((id == BLLegID || id == BRLegID) && msgId < 4))
+	if (((id == FL_LEG_ID || id == FR_LEG_ID) && msgId > 4) || ((id == BL_LEG_ID || id == BR_LEG_ID) && msgId < 4))
 		return;
 	uint16_t pInt = (msg.buf[1] << 8) | msg.buf[2];
 	uint16_t vInt = (msg.buf[3] << 4) | (msg.buf[4] >> 4);

@@ -27,8 +27,8 @@
 #define FORCE_MODE 1 //force mode for MPC
 #define MOTOR_MODE 2 //control each motor for some sperical situation
 
-#define FLLegID 0
-#define FRLegID 1
-#define BLLegID 2
-#define BRLegID 3
+#define FL_LEG_ID 0
+#define FR_LEG_ID 1
+#define BL_LEG_ID 2
+#define BR_LEG_ID 3
 #endif

@@ -8,7 +8,7 @@
 
 using namespace Eigen;
 
-struct MotorPDGain
+struct motorPDGain_t
 {
 	float kpAbad;
 	float kdAbad;
@@ -17,13 +17,37 @@ struct MotorPDGain
 	float kpKnee;
 	float kdKnee;
 };
-struct feetPDGain
+struct motorInitPos_t
+{
+	float abad;
+	float hip;
+	float knee;
+};
+struct motorCANID_t
+{
+	uint32_t abad;
+	uint32_t hip;
+	uint32_t knee;
+};
+struct feetPDGain_t
 {
 	float kpLeg;
 	float kdLeg;
 };
-extern struct MotorPDGain motorGain[4];
-extern struct feetPDGain feetGain[4];
+struct legLength_t
+{
+	float baseOffset0;
+	float baseOffset1;
+	float upperLength;
+	float lowerLength;
+};
+
+struct motorCANID_t motorCANID[4];
+struct motorPDGain_t motorGain[4];
+struct motorInitPos_t motorInitPos[4];
+struct feetPDGain_t feetGain[4];
+struct legLength_t legLength[4];
+int CANPort[4];
 
 class jointController
 {
@@ -71,7 +95,7 @@ public:
 	Vector3f pEst, vEst, fEst; //the estimate position, velocity, force of feet
 	Vector3f vEstM, tEstM;	 // velocity and touque of each motor
 	Vector3f fOut, tOut;
-	legController(uint32_t canID[3], float initPos[3], float length[2], float offset[2], int legID, int CANPort);
+	legController(int legID);
 	~legController();
 
 	void unpackReply(CAN_message_t msg);
