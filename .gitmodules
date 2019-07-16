@@ -8,3 +8,6 @@
 [submodule "lib/ChRt"]
 	path = lib/ChRt
 	url = git@github.com:greiman/ChRt.git
+[submodule "lib/SdFat"]
+	path = lib/SdFat
+	url = git@github.com:greiman/SdFat.git
