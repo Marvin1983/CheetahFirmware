@@ -32,20 +32,16 @@ private:
 	int id;
 	int port;
 	int mode;
-	bool isCANInit;
 	float rollInit, hipInit, kneeInit; //the inital angle of three joint
 	float baseOffset[2], l1, l2;
 	float kp, kd;
 	jointController *abad;
 	jointController *hip;
 	jointController *knee;
-	CAN_message_t rxMsg; //receive message
 	Matrix3f jacobian, inverseJacobian;
 
-	void CANInit();
 	void packAll();
 	void writeAll();
-	void zeroAll();
 
 	//WARNING!!!!!! the upper length(l1) is the distance between hip joint and knee joint, the lower length(l2) is the distance between knee joint and feet!!!!!
 	//baseOffset[0]: X Offset ;baseOffset[1]: Y OffSet
@@ -54,21 +50,30 @@ public:
 	Vector3f pDes, vDes, fFF;
 	Vector3f pEst, vEst, fEst; //the estimate position, velocity, force of feet
 	Vector3f vEstM, tEstM;	 // velocity and touque of each motor
+	CAN_message_t rxMsg;	   //receive message
 	Vector3f fOut, tOut;
 	legController(int legID);
 	~legController();
 
-	void unpackReply(CAN_message_t msg);
+	bool unpackReply();
 	void motorOnAll();
 	void motorOffAll();
 	void changesMode(int mode);
 	void updateState();
+	void zeroAll();
 
 	void control();
 };
 
+extern legController FLLeg;
+extern legController FRLeg;
+extern legController BLLeg;
+extern legController BRLeg;
+
 extern THD_WORKING_AREA(waLegThread, 2048);
 extern THD_FUNCTION(legThread, arg);
+
+
 
 #ifdef DEBUG_LEG
 void print_mtxf(const MatrixXf &X);

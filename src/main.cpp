@@ -20,15 +20,13 @@ static THD_FUNCTION(BlinkThread, arg)
 	systime_t wakeTime = chVTGetSystemTimeX(); // T0
 	while (true)
 	{
-		wakeTime += MS2ST(500);
-		chThdSleepUntil(wakeTime);
 
 		digitalWrite(LED_BUILTIN, HIGH);
-
 		wakeTime += MS2ST(500);
 		chThdSleepUntil(wakeTime);
-
 		digitalWrite(LED_BUILTIN, LOW);
+		wakeTime += MS2ST(500);
+		chThdSleepUntil(wakeTime);
 	}
 }
 
@@ -66,6 +64,7 @@ void setup()
 
 	while (!Serial)
 		;
+	Serial.println("lalala");
 	// Start ChibiOS.
 	chBegin(chSetup);
 	while (1)

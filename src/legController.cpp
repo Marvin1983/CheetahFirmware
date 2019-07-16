@@ -9,8 +9,8 @@
 #include <ChRt.h>
 
 using namespace Eigen;
-FlexCAN CANbus0(1000000, 0);
-FlexCAN CANbus1(1000000, 1);
+FlexCAN CANBus0(1000000, 0);
+FlexCAN CANBus1(1000000, 1);
 
 /// CAN Command Packet Structure ///
 /// 16 bit position command, between -4*pi and 4*pi
@@ -59,6 +59,7 @@ jointController::jointController(uint32_t canID, float initPos)
 {
 	txMsg.len = 8;
 	txMsg.id = canID;
+	txMsg.timeout = 2;
 }
 
 jointController::~jointController()
@@ -77,9 +78,7 @@ legController::legController(int legID)
 	l2 = legLength[id].lowerLength;
 	port = legCANPort[id];
 	rxMsg.len = 6;
-
-	CANInit();
-	zeroAll();
+	rxMsg.timeout = 2;
 }
 
 legController::~legController()
@@ -88,23 +87,16 @@ legController::~legController()
 	delete hip;
 	delete knee;
 }
-void legController::CANInit()
-{
-	if (isCANInit)
-		return;
-	CANbus0.begin();
-	CANbus1.begin();
-}
 
-void legController::unpackReply(CAN_message_t msg)
+bool legController::unpackReply()
 {
 	/// unpack ints from can buffer ///
-	uint16_t msgId = msg.buf[0];
+	uint16_t msgId = rxMsg.buf[0];
 	if (((id == FL_LEG_ID || id == FR_LEG_ID) && msgId > 4) || ((id == BL_LEG_ID || id == BR_LEG_ID) && msgId < 4))
-		return;
-	uint16_t pInt = (msg.buf[1] << 8) | msg.buf[2];
-	uint16_t vInt = (msg.buf[3] << 4) | (msg.buf[4] >> 4);
-	uint16_t iInt = ((msg.buf[4] & 0xF) << 8) | msg.buf[5];
+		return 0;
+	uint16_t pInt = (rxMsg.buf[1] << 8) | rxMsg.buf[2];
+	uint16_t vInt = (rxMsg.buf[3] << 4) | (rxMsg.buf[4] >> 4);
+	uint16_t iInt = ((rxMsg.buf[4] & 0xF) << 8) | rxMsg.buf[5];
 	/// convert uints to floats ///
 	float p = uint_to_float(pInt, P_MIN, P_MAX, 16);
 	float v = uint_to_float(vInt, V_MIN, V_MAX, 12);
@@ -134,6 +126,7 @@ void legController::unpackReply(CAN_message_t msg)
 		vEstM(2) = v;
 		tEstM(2) = t;
 	}
+	return 1;
 }
 
 void legController::packAll()
@@ -146,21 +139,21 @@ void legController::writeAll()
 {
 	if (port == CAN_0)
 	{
-		CANbus0.write(abad->txMsg);
-		delayMicroseconds(1);
-		CANbus0.write(hip->txMsg);
-		delayMicroseconds(1);
-		CANbus0.write(knee->txMsg);
-		delayMicroseconds(1);
+		CANBus0.write(abad->txMsg);
+		chThdSleepMicroseconds(2);
+		CANBus0.write(hip->txMsg);
+		chThdSleepMicroseconds(2);
+		CANBus0.write(knee->txMsg);
+		chThdSleepMicroseconds(2);
 	}
 	else if (port == CAN_1)
 	{
-		CANbus1.write(abad->txMsg);
-		delayMicroseconds(1);
-		CANbus1.write(hip->txMsg);
-		delayMicroseconds(1);
-		CANbus1.write(knee->txMsg);
-		delayMicroseconds(1);
+		CANBus1.write(abad->txMsg);
+		chThdSleepMicroseconds(2);
+		CANBus1.write(hip->txMsg);
+		chThdSleepMicroseconds(2);
+		CANBus1.write(knee->txMsg);
+		chThdSleepMicroseconds(2);
 	}
 }
 
@@ -291,14 +284,64 @@ void legController::control()
 	}
 }
 
+///Leg Control thread
+
+legController FLLeg(FL_LEG_ID);
+legController FRLeg(FR_LEG_ID);
+legController BLLeg(BL_LEG_ID);
+legController BRLeg(BR_LEG_ID);
+
 THD_WORKING_AREA(waLegThread, 2048);
 
 THD_FUNCTION(legThread, arg)
 {
 	(void)arg;
+	Serial.println("Set up CAN...");
+	CANBus0.begin();
+	CANBus1.begin();
+
+	Serial.println("Zero all...");
+	FLLeg.zeroAll();
+	FRLeg.zeroAll();
+	BLLeg.zeroAll();
+	BRLeg.zeroAll();
+
+	FLLeg.motorOnAll();
+	FRLeg.motorOnAll();
+	BLLeg.motorOnAll();
+	BRLeg.motorOnAll();
+	Serial.println("Controller is working now!");
+
 	systime_t wakeTime = chVTGetSystemTimeX(); // T0
 	while (true)
 	{
+		if (CANBus0.available())
+		{
+			CANBus0.read(FLLeg.rxMsg);
+			if (FLLeg.unpackReply())
+				FLLeg.updateState();
+			else
+			{
+				FRLeg.unpackReply();
+				FRLeg.updateState();
+			}
+		}
+		if (CANBus1.available())
+		{
+			CANBus0.read(BLLeg.rxMsg);
+			if (BLLeg.unpackReply())
+				BLLeg.updateState();
+			else
+			{
+				BRLeg.unpackReply();
+				BRLeg.updateState();
+			}
+		}
+		FLLeg.control();
+		FRLeg.control();
+		BLLeg.control();
+		BRLeg.control();
+
 		wakeTime += MS2ST(1 / F_LEG_THREAD);
 		chThdSleepUntil(wakeTime);
 	}
