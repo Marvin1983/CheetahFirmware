@@ -11,46 +11,6 @@ using namespace Eigen;
 FlexCAN CANbus0(1000000, 0);
 FlexCAN CANbus1(1000000, 1);
 
-struct motorPDGain_t motorGain[] = {
-	//	abad 		hip	 		knee
-	//p    d	 p     d	 p     d
-	{1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f}, //font left
-	{1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f}, //font right
-	{1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f}, //back left
-	{1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f}  //back right
-};
-struct motorInitPos_t motorInitPos[] = {
-	//abad hip	 knee
-	{0.0f, 0.0f, PI / 6.0f}, //font left
-	{0.0f, 0.0f, PI / 6.0f}, //font right
-	{0.0f, 0.0f, PI / 6.0f}, //back left
-	{0.0f, 0.0f, PI / 6.0f}  //back right
-};
-struct motorCANID_t motorCANID[4]{
-	//abad,hip,knee
-	{1, 2, 3}, //font left
-	{4, 5, 6}, //font right
-	{1, 2, 3}, //back left
-	{4, 5, 6}  //back right
-};
-struct feetPDGain_t feetGain[] = {
-	{1.0f, 1.0f}, //font left	feet
-	{1.0f, 1.0f}, //font right feet
-	{1.0f, 1.0f}, //back left feet
-	{1.0f, 1.0f}  //back right feet
-};
-struct legLength_t legLength[] = {
-	//baseOffset0, baseOffset1, upperLength,lowerLength
-	{0.02f, -0.02f, 0.15f, 0.15f}, //font left
-	{0.02f, 0.02f, 0.15f, 0.15f},  //font right
-	{-0.02f, 0.02f, 0.15f, 0.15f}, //back left
-	{-0.02f, -0.02f, 0.15f, 0.15f} //back right
-};
-
-int CANPort[4] =
-	//FL, FR, BL,BR
-	{0, 0, 1, 1};
-
 /// CAN Command Packet Structure ///
 /// 16 bit position command, between -4*pi and 4*pi
 /// 12 bit velocity command, between -30 and + 30 rad/s

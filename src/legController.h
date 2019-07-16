@@ -8,47 +8,6 @@
 
 using namespace Eigen;
 
-struct motorPDGain_t
-{
-	float kpAbad;
-	float kdAbad;
-	float kpHip;
-	float kdHip;
-	float kpKnee;
-	float kdKnee;
-};
-struct motorInitPos_t
-{
-	float abad;
-	float hip;
-	float knee;
-};
-struct motorCANID_t
-{
-	uint32_t abad;
-	uint32_t hip;
-	uint32_t knee;
-};
-struct feetPDGain_t
-{
-	float kpLeg;
-	float kdLeg;
-};
-struct legLength_t
-{
-	float baseOffset0;
-	float baseOffset1;
-	float upperLength;
-	float lowerLength;
-};
-
-struct motorCANID_t motorCANID[4];
-struct motorPDGain_t motorGain[4];
-struct motorInitPos_t motorInitPos[4];
-struct feetPDGain_t feetGain[4];
-struct legLength_t legLength[4];
-int CANPort[4];
-
 class jointController
 {
 private:

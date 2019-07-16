@@ -31,4 +31,46 @@
 #define FR_LEG_ID 1
 #define BL_LEG_ID 2
 #define BR_LEG_ID 3
+
+struct motorPDGain_t
+{
+	float kpAbad;
+	float kdAbad;
+	float kpHip;
+	float kdHip;
+	float kpKnee;
+	float kdKnee;
+};
+struct motorInitPos_t
+{
+	float abad;
+	float hip;
+	float knee;
+};
+struct motorCANID_t
+{
+	uint32_t abad;
+	uint32_t hip;
+	uint32_t knee;
+};
+struct feetPDGain_t
+{
+	float kpLeg;
+	float kdLeg;
+};
+struct legLength_t
+{
+	float baseOffset0;
+	float baseOffset1;
+	float upperLength;
+	float lowerLength;
+};
+
+extern struct motorCANID_t motorCANID[4];
+extern struct motorPDGain_t motorGain[4];
+extern struct motorInitPos_t motorInitPos[4];
+extern struct feetPDGain_t feetGain[4];
+extern struct legLength_t legLength[4];
+extern int CANPort[4];
+
 #endif
