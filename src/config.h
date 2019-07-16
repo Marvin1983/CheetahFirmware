@@ -7,7 +7,8 @@
 ///debug///
 
 //#define DEBUG_LEG
-#define DEBUG_MOTOR
+//#define DEBUG_MOTOR
+#define DEBUG_THREAD
 
 /// motorController///
 #define P_MIN -12.5f //between -4*pi and 4*pi
@@ -78,5 +79,4 @@ extern int legCANPort[4];
 
 ///Thread///
 
-extern enum priorityThread_t priorityThread;
 #endif
