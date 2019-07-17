@@ -1,6 +1,5 @@
 #ifndef CONFIG_H
 #define CONFIG_H
-
 ///main///
 #define SERIAL_BAUD 230400
 
@@ -84,7 +83,7 @@ extern int legCANPort[4];
 #define P_TRAJ_THREAD 4 //Priority
 
 ///Trajectory///
-#define F_STEP 3		//Frequency of step
+#define F_STEP 3		 //Frequency of step
 #define FEET_HEIGHT 0.2f //The max height when swiping
-#define STAND_DUTY 0.5f //stand duty ratio
+#define STAND_DUTY 0.5f  //stand duty ratio
 #endif

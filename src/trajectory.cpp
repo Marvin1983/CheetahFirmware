@@ -1,10 +1,4 @@
 #include "trajectory.h"
-#include "legController.h"
-#include "config.h"
-
-#include <Arduino.h>
-#include <Eigen.h>
-#include <ChRt.h>
 
 trajectory::trajectory(legController *leg)
 {
@@ -29,7 +23,7 @@ void trajectory::updateDes()
 		return;
 	time += 1.0f / (float)F_TRAJ_THREAD;
 	float sigma = (2.0f * PI) / (swipingDuty * stepPeriod);
-	//chMtxLock(&legDesDataMutex);
+	chMtxLock(&legDesDataMutex);
 	if (time <= stepPeriod * swipingDuty)
 	{
 		legCon->pDes(0) = delta(0) / (2.0f * PI) * (sigma * time - sin(sigma * time)) + start(0);

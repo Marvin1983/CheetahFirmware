@@ -1,9 +1,6 @@
 #ifndef TRAJECTORY_H
 #define TRAJECTORY_H
-#include <ChRt.h>
-#include <Eigen.h>
 #include "legController.h"
-#include "config.h"
 
 class trajectory
 {

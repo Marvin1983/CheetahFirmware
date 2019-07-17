@@ -5,8 +5,8 @@
 #include <Eigen.h>
 #include <Eigen/Core>
 #include <Eigen/LU>
-#include "legController.h"
-//#include "trajectory.h"
+//#include "legController.h"
+#include "trajectory.h"
 //------------------------------------------------------------------------------
 // BlinkThread: Blink the built-in led at 1Hz so you know if the Teensy is on.
 
@@ -40,7 +40,7 @@ void chSetup()
 	// Blink thread: blinks the onboard LED
 	chThdCreateStatic(waBlinkThread, sizeof(waBlinkThread), NORMALPRIO, BlinkThread, NULL);
 	chThdCreateStatic(waLegThread, sizeof(waLegThread), NORMALPRIO + P_LEG_THREAD, legThread, NULL);
-	//chThdCreateStatic(waTrajThread, sizeof(waTrajThread), NORMALPRIO + P_TRAJ_THREAD, trajThread, NULL);
+	chThdCreateStatic(waTrajThread, sizeof(waTrajThread), NORMALPRIO + P_TRAJ_THREAD, trajThread, NULL);
 }
 
 #ifdef DEBUG_THREAD

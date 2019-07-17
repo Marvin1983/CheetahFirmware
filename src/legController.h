@@ -1,13 +1,17 @@
 #ifndef LEGCONTROLLER_H
 #define LEGCONTROLLER_H
-#include "fastMath.h"
+#include <Arduino.h>
 #include <FlexCAN.h>
 #include <Eigen.h>
 #include <Eigen/Core>
 #include <Eigen/LU>
 #include <ChRt.h>
+#include "fastMath.h"
+#include "config.h"
 
 using namespace Eigen;
+
+extern mutex_t legDesDataMutex;
 
 class jointController
 {
@@ -73,7 +77,6 @@ extern legController BRLeg;
 
 extern int counter;
 
-//MUTEX_DECL(legDesDataMutex);
 extern THD_WORKING_AREA(waLegThread, 512);
 extern THD_FUNCTION(legThread, arg);
 

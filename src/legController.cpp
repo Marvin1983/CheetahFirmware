@@ -1,21 +1,12 @@
 #include "legController.h"
-#include "config.h"
-#include "fastMath.h"
-#include <Arduino.h>
-#include <FlexCAN.h>
-#include <Eigen.h>
-#include <Eigen/Core>
-#include <Eigen/LU>
-#include <ChRt.h>
 
 using namespace Eigen;
 FlexCAN CANBus0(1000000, 0);
 FlexCAN CANBus1(1000000, 1);
 CAN_message_t legController::rxMsg; //receive message
 
-int counter = 0;
-
-MUTEX_DECL(legDesDataMutex);
+int counter;
+mutex_t legDesDataMutex;
 
 /// CAN Command Packet Structure ///
 /// 16 bit position command, between -4*pi and 4*pi
