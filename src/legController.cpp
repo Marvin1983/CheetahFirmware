@@ -259,6 +259,7 @@ void legController::control()
 	switch (mode)
 	{
 	case SWIPING_MODE:
+
 		chMtxLock(&legDesDataMutex);
 		fOut = kp * (pDes - pEst) + kd * (vDes - vEst) + fFF;
 		chMtxUnlock(&legDesDataMutex);
@@ -339,7 +340,7 @@ THD_FUNCTION(legThread, arg)
 				BRLeg.updateState();
 			}
 		}
-		//FLLeg.control();
+		FLLeg.control();
 		//FRLeg.control();
 		//BLLeg.control();
 		//BRLeg.control();
