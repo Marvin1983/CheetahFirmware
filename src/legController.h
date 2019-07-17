@@ -47,10 +47,11 @@ private:
 	//baseOffset[0]: X Offset ;baseOffset[1]: Y OffSet
 public:
 	bool isContact;
+	static CAN_message_t rxMsg; //receive message
+
 	Vector3f pDes, vDes, fFF;
 	Vector3f pEst, vEst, fEst; //the estimate position, velocity, force of feet
 	Vector3f vEstM, tEstM;	 // velocity and touque of each motor
-	CAN_message_t rxMsg;	   //receive message
 	Vector3f fOut, tOut;
 	legController(int legID);
 	~legController();
@@ -58,7 +59,7 @@ public:
 	bool unpackReply();
 	void motorOnAll();
 	void motorOffAll();
-	void changesMode(int mode);
+	void changeMode(int mode);
 	void updateState();
 	void zeroAll();
 
@@ -70,10 +71,10 @@ extern legController FRLeg;
 extern legController BLLeg;
 extern legController BRLeg;
 
+extern int counter;
+
 extern THD_WORKING_AREA(waLegThread, 2048);
 extern THD_FUNCTION(legThread, arg);
-
-
 
 #ifdef DEBUG_LEG
 void print_mtxf(const MatrixXf &X);

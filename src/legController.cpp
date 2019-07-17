@@ -11,6 +11,7 @@
 using namespace Eigen;
 FlexCAN CANBus0(1000000, 0);
 FlexCAN CANBus1(1000000, 1);
+CAN_message_t legController::rxMsg; //receive message
 
 /// CAN Command Packet Structure ///
 /// 16 bit position command, between -4*pi and 4*pi
@@ -28,7 +29,6 @@ FlexCAN CANBus1(1000000, 1);
 /// 5: [kd[11-4]]
 /// 6: [kd[3-0], torque[11-8]]
 /// 7: [torque[7-0]]
-
 void jointController::packCmd()
 {
 
@@ -59,7 +59,7 @@ jointController::jointController(uint32_t canID, float initPos)
 {
 	txMsg.len = 8;
 	txMsg.id = canID;
-	txMsg.timeout = 2;
+	txMsg.timeout = 1;
 }
 
 jointController::~jointController()
@@ -78,7 +78,8 @@ legController::legController(int legID)
 	l2 = legLength[id].lowerLength;
 	port = legCANPort[id];
 	rxMsg.len = 6;
-	rxMsg.timeout = 2;
+	rxMsg.timeout = 1;
+	changeMode(FEET_MODE);
 }
 
 legController::~legController()
@@ -200,7 +201,7 @@ void legController::motorOffAll()
 	//writeAll();
 }
 
-void legController::changesMode(int legMode)
+void legController::changeMode(int legMode)
 {
 	mode = legMode;
 	switch (legMode)
@@ -270,7 +271,7 @@ void legController::control()
 		hip->tFF = tOut(1);
 		knee->tFF = tOut(2);
 		packAll();
-		writeAll();
+		//writeAll();
 		break;
 	case FORCE_MODE:
 		fOut = fFF;
@@ -279,7 +280,7 @@ void legController::control()
 		hip->tFF = tOut(1);
 		knee->tFF = tOut(2);
 		packAll();
-		writeAll();
+		//writeAll();
 		break;
 	}
 }
@@ -290,6 +291,8 @@ legController FLLeg(FL_LEG_ID);
 legController FRLeg(FR_LEG_ID);
 legController BLLeg(BL_LEG_ID);
 legController BRLeg(BR_LEG_ID);
+
+int counter = 0;
 
 THD_WORKING_AREA(waLegThread, 2048);
 
@@ -305,7 +308,7 @@ THD_FUNCTION(legThread, arg)
 	FRLeg.zeroAll();
 	BLLeg.zeroAll();
 	BRLeg.zeroAll();
-
+	Serial.println("Power on all...");
 	FLLeg.motorOnAll();
 	FRLeg.motorOnAll();
 	BLLeg.motorOnAll();
@@ -315,7 +318,7 @@ THD_FUNCTION(legThread, arg)
 	systime_t wakeTime = chVTGetSystemTimeX(); // T0
 	while (true)
 	{
-		if (CANBus0.available())
+		while (CANBus0.available())
 		{
 			CANBus0.read(FLLeg.rxMsg);
 			if (FLLeg.unpackReply())
@@ -326,9 +329,9 @@ THD_FUNCTION(legThread, arg)
 				FRLeg.updateState();
 			}
 		}
-		if (CANBus1.available())
+		while (CANBus1.available())
 		{
-			CANBus0.read(BLLeg.rxMsg);
+			CANBus1.read(BLLeg.rxMsg);
 			if (BLLeg.unpackReply())
 				BLLeg.updateState();
 			else
@@ -342,7 +345,8 @@ THD_FUNCTION(legThread, arg)
 		BLLeg.control();
 		BRLeg.control();
 
-		wakeTime += MS2ST(1 / F_LEG_THREAD);
+		counter++;
+		wakeTime += MS2ST((uint32_t)1000 / F_LEG_THREAD);
 		chThdSleepUntil(wakeTime);
 	}
 }

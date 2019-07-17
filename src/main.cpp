@@ -76,5 +76,6 @@ void loop()
 	chThdSleepMilliseconds(500);
 #ifdef DEBUG_THREAD
 	printUnusedStack();
+	Serial.println(counter);
 #endif
 }
