@@ -83,7 +83,7 @@ legController::legController(int legID)
 	port = legCANPort[id];
 	rxMsg.len = 6;
 	rxMsg.timeout = 1;
-	changeMode(SWIP_MODE);
+	changeMode(SWIPING_MODE);
 }
 
 legController::~legController()
@@ -210,7 +210,7 @@ void legController::changeMode(int legMode)
 	mode = legMode;
 	switch (legMode)
 	{
-	case SWIP_MODE:
+	case SWIPING_MODE:
 		abad->kp = 0;
 		abad->kd = 0;
 		hip->kp = 0;
@@ -268,7 +268,7 @@ void legController::control()
 {
 	switch (mode)
 	{
-	case SWIP_MODE:
+	case SWIPING_MODE:
 		chMtxLock(&legDesDataMutex);
 		fOut = kp * (pDes - pEst) + kd * (vDes - vEst) + fFF;
 		chMtxUnlock(&legDesDataMutex);

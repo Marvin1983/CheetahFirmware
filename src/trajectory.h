@@ -3,22 +3,27 @@
 #include <ChRt.h>
 #include <Eigen.h>
 #include "legController.h"
+#include "config.h"
 
 class trajectory
 {
 private:
+	float time;
+	float stepPeriod;
+	float swipingDuty;
+	bool isTouchDown;
+	Vector3f end;
+	Vector3f start;
+	Vector3f delta;
+
+	legController *legCon;
+
 public:
-	trajectory();
-
+	trajectory(legController *leg);
 	~trajectory();
+	void upDateStartAndSetEnd(Vector3f end);
+	void updateDes();
+	void touchDown();
 };
-
-trajectory::trajectory(/* args */)
-{
-}
-
-trajectory::~trajectory()
-{
-}
 
 #endif

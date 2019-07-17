@@ -27,9 +27,9 @@
 #define CAN_0 0
 #define CAN_1 1
 
-#define SWIP_MODE 0  //feet mode for swiping
-#define STAND_MODE 1 //force mode for MPC
-#define MOTOR_MODE 2 //control each motor for some sperical situation
+#define SWIPING_MODE 0 //feet mode for swiping
+#define STAND_MODE 1   //force mode for MPC
+#define MOTOR_MODE 2   //control each motor for some sperical situation
 
 #define FL_LEG_ID 0
 #define FR_LEG_ID 1
@@ -85,6 +85,6 @@ extern int legCANPort[4];
 
 ///Trajectory///
 #define F_STEP 3		//Frequency of step
-#define FEET_HEIGHT 0.2 //The max height when swiping
-#define STAND_DUTY 0.5  //stand duty ratio
+#define FEET_HEIGHT 0.2f //The max height when swiping
+#define STAND_DUTY 0.5f //stand duty ratio
 #endif
