@@ -303,7 +303,7 @@ legController FRLeg(FR_LEG_ID);
 legController BLLeg(BL_LEG_ID);
 legController BRLeg(BR_LEG_ID);
 
-THD_WORKING_AREA(waLegThread, 2048);
+THD_WORKING_AREA(waLegThread, 512);
 
 THD_FUNCTION(legThread, arg)
 {

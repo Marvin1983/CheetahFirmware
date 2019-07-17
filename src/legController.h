@@ -73,7 +73,8 @@ extern legController BRLeg;
 
 extern int counter;
 
-extern THD_WORKING_AREA(waLegThread, 2048);
+//MUTEX_DECL(legDesDataMutex);
+extern THD_WORKING_AREA(waLegThread, 512);
 extern THD_FUNCTION(legThread, arg);
 
 #ifdef DEBUG_LEG

@@ -26,4 +26,8 @@ public:
 	void touchDown();
 };
 
+extern THD_WORKING_AREA(waTrajThread, 512);
+
+extern THD_FUNCTION(trajThread, arg);
+
 #endif
