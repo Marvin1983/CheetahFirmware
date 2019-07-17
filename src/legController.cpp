@@ -1,7 +1,7 @@
 #include "legController.h"
-#include "Arduino.h"
 #include "config.h"
 #include "fastMath.h"
+#include <Arduino.h>
 #include <FlexCAN.h>
 #include <Eigen.h>
 #include <Eigen/Core>
@@ -12,6 +12,10 @@ using namespace Eigen;
 FlexCAN CANBus0(1000000, 0);
 FlexCAN CANBus1(1000000, 1);
 CAN_message_t legController::rxMsg; //receive message
+
+int counter = 0;
+
+MUTEX_DECL(legDesDataMutex);
 
 /// CAN Command Packet Structure ///
 /// 16 bit position command, between -4*pi and 4*pi
@@ -79,7 +83,7 @@ legController::legController(int legID)
 	port = legCANPort[id];
 	rxMsg.len = 6;
 	rxMsg.timeout = 1;
-	changeMode(FEET_MODE);
+	changeMode(SWIP_MODE);
 }
 
 legController::~legController()
@@ -206,7 +210,7 @@ void legController::changeMode(int legMode)
 	mode = legMode;
 	switch (legMode)
 	{
-	case FEET_MODE:
+	case SWIP_MODE:
 		abad->kp = 0;
 		abad->kd = 0;
 		hip->kp = 0;
@@ -216,7 +220,7 @@ void legController::changeMode(int legMode)
 		kp = feetGain[id].kpLeg;
 		kd = feetGain[id].kdLeg;
 		break;
-	case FORCE_MODE:
+	case STAND_MODE:
 		abad->kp = 0;
 		abad->kd = 0;
 		hip->kp = 0;
@@ -264,8 +268,10 @@ void legController::control()
 {
 	switch (mode)
 	{
-	case FEET_MODE:
+	case SWIP_MODE:
+		chMtxLock(&legDesDataMutex);
 		fOut = kp * (pDes - pEst) + kd * (vDes - vEst) + fFF;
+		chMtxUnlock(&legDesDataMutex);
 		tOut = inverseJacobian * fOut;
 		abad->tFF = tOut(0);
 		hip->tFF = tOut(1);
@@ -273,14 +279,19 @@ void legController::control()
 		packAll();
 		//writeAll();
 		break;
-	case FORCE_MODE:
+	case STAND_MODE:
+		chMtxLock(&legDesDataMutex);
 		fOut = fFF;
+		chMtxUnlock(&legDesDataMutex);
+
 		tOut = inverseJacobian * fOut;
 		abad->tFF = tOut(0);
 		hip->tFF = tOut(1);
 		knee->tFF = tOut(2);
 		packAll();
 		//writeAll();
+		break;
+	case MOTOR_MODE:
 		break;
 	}
 }
@@ -291,8 +302,6 @@ legController FLLeg(FL_LEG_ID);
 legController FRLeg(FR_LEG_ID);
 legController BLLeg(BL_LEG_ID);
 legController BRLeg(BR_LEG_ID);
-
-int counter = 0;
 
 THD_WORKING_AREA(waLegThread, 2048);
 

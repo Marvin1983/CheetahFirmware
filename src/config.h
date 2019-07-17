@@ -27,8 +27,8 @@
 #define CAN_0 0
 #define CAN_1 1
 
-#define FEET_MODE 0  //feet mode for swiping
-#define FORCE_MODE 1 //force mode for MPC
+#define SWIP_MODE 0  //feet mode for swiping
+#define STAND_MODE 1 //force mode for MPC
 #define MOTOR_MODE 2 //control each motor for some sperical situation
 
 #define FL_LEG_ID 0
@@ -78,6 +78,13 @@ extern struct legLength_t legLength[4];
 extern int legCANPort[4];
 
 ///Thread///
-#define F_LEG_THREAD 1000 //Hz
-#define P_LEG_THREAD 5	//Priority
+#define F_LEG_THREAD 500 //Hz
+#define P_LEG_THREAD 5   //Priority
+#define F_TRAJ_THREAD 200
+#define P_TRAJ_THREAD 4 //Priority
+
+///Trajectory///
+#define F_STEP 3		//Frequency of step
+#define FEET_HEIGHT 0.2 //The max height when swiping
+#define STAND_DUTY 0.5  //stand duty ratio
 #endif
