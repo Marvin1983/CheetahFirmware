@@ -1,6 +1,5 @@
 #include "legController.h"
 
-using namespace Eigen;
 FlexCAN CANBus0(1000000, 0);
 FlexCAN CANBus1(1000000, 1);
 CAN_message_t legController::rxMsg; //receive message
@@ -340,12 +339,12 @@ THD_FUNCTION(legThread, arg)
 				BRLeg.updateState();
 			}
 		}
-		FLLeg.control();
-		FRLeg.control();
-		BLLeg.control();
-		BRLeg.control();
+		//FLLeg.control();
+		//FRLeg.control();
+		//BLLeg.control();
+		//BRLeg.control();
 
-		counter++;
+		//counter++;
 		wakeTime += MS2ST((uint32_t)1000 / F_LEG_THREAD);
 		chThdSleepUntil(wakeTime);
 	}

@@ -79,8 +79,8 @@ extern int legCANPort[4];
 ///Thread///
 #define F_LEG_THREAD 500 //Hz
 #define P_LEG_THREAD 5   //Priority
-#define F_TRAJ_THREAD 200
-#define P_TRAJ_THREAD 4 //Priority
+#define F_TRAJ_THREAD 500
+#define P_TRAJ_THREAD 6 //Priority
 
 ///Trajectory///
 #define F_STEP 3		 //Frequency of step

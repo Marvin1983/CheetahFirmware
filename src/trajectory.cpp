@@ -41,6 +41,7 @@ void trajectory::updateDes()
 		//not change z speed
 		legCon->pDes(2) += 1.0f / (float)F_TRAJ_THREAD * legCon->vDes(2);
 	}
+	chMtxUnlock(&legDesDataMutex);
 }
 void trajectory::touchDown()
 {

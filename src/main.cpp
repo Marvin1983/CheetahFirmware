@@ -5,7 +5,7 @@
 #include <Eigen.h>
 #include <Eigen/Core>
 #include <Eigen/LU>
-//#include "legController.h"
+#include "legController.h"
 #include "trajectory.h"
 //------------------------------------------------------------------------------
 // BlinkThread: Blink the built-in led at 1Hz so you know if the Teensy is on.
@@ -50,6 +50,8 @@ void printUnusedStack()
 	Serial.print(chUnusedThreadStack(waBlinkThread, sizeof(waBlinkThread)));
 	Serial.print(' ');
 	Serial.print(chUnusedThreadStack(waLegThread, sizeof(waLegThread)));
+	Serial.print(' ');
+	Serial.print(chUnusedThreadStack(waTrajThread, sizeof(waTrajThread)));
 	Serial.print(' ');
 	Serial.print(chUnusedMainStack());
 	Serial.println();
