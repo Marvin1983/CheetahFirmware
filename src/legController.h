@@ -70,10 +70,10 @@ public:
 	void control();
 };
 
-extern legController FLLeg;
-extern legController FRLeg;
-extern legController BLLeg;
-extern legController BRLeg;
+extern legController controlFL;
+extern legController controlFR;
+extern legController controlBL;
+extern legController controlBR;
 
 extern int counter;
 

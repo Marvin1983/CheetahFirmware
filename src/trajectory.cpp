@@ -50,6 +50,10 @@ void trajectory::touchDown()
 	legCon->vDes(2) = 0;
 	isTouchDown = true;
 }
+trajectory trajFL(&controlFL);
+trajectory trajFR(&controlFR);
+trajectory trajBL(&controlBL);
+trajectory trajBR(&controlBR);
 
 THD_WORKING_AREA(waTrajThread, 512);
 
@@ -59,7 +63,13 @@ THD_FUNCTION(trajThread, arg)
 	systime_t wakeTime = chVTGetSystemTimeX(); //
 	while (true)
 	{
+		trajFL.updateDes();
+		trajFR.updateDes();
+		trajBL.updateDes();
+		trajBR.updateDes();
+#ifdef DEBUG_THREAD;
 		counter++;
+#endif
 		wakeTime += MS2ST((uint32_t)1000 / F_TRAJ_THREAD);
 		chThdSleepUntil(wakeTime);
 	}

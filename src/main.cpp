@@ -36,13 +36,12 @@ void chSetup()
 {
 	// Create ALL the threads!!
 	// This is the most important part of the setup
+	chMtxObjectInit(&legDesDataMutex);
 
 	chThdCreateStatic(waBlinkThread, sizeof(waBlinkThread), NORMALPRIO, BlinkThread, NULL);
 	chThdCreateStatic(waLegThread, sizeof(waLegThread), NORMALPRIO + P_LEG_THREAD, legThread, NULL);
 	chThdCreateStatic(waTrajThread, sizeof(waTrajThread), NORMALPRIO + P_TRAJ_THREAD, trajThread, NULL);
 	// Initializing the mutex sharing the resource.
-
-	chMtxObjectInit(&legDesDataMutex);
 }
 
 #ifdef DEBUG_THREAD
@@ -68,7 +67,6 @@ void setup()
 
 	while (!Serial)
 		;
-	Serial.println("lalala");
 	// Start ChibiOS.
 	chBegin(chSetup);
 	while (1)

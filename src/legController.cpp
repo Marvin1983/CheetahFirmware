@@ -289,10 +289,10 @@ void legController::control()
 
 ///Leg Control thread
 
-legController FLLeg(FL_LEG_ID);
-legController FRLeg(FR_LEG_ID);
-legController BLLeg(BL_LEG_ID);
-legController BRLeg(BR_LEG_ID);
+legController controlFL(FL_LEG_ID);
+legController controlFR(FR_LEG_ID);
+legController controlBL(BL_LEG_ID);
+legController controlBR(BR_LEG_ID);
 
 THD_WORKING_AREA(waLegThread, 512);
 
@@ -304,15 +304,15 @@ THD_FUNCTION(legThread, arg)
 	CANBus1.begin();
 
 	Serial.println("Zero all...");
-	FLLeg.zeroAll();
-	FRLeg.zeroAll();
-	BLLeg.zeroAll();
-	BRLeg.zeroAll();
+	controlFL.zeroAll();
+	controlFR.zeroAll();
+	controlBL.zeroAll();
+	controlBR.zeroAll();
 	Serial.println("Power on all...");
-	FLLeg.motorOnAll();
-	FRLeg.motorOnAll();
-	BLLeg.motorOnAll();
-	BRLeg.motorOnAll();
+	controlFL.motorOnAll();
+	controlFR.motorOnAll();
+	controlBL.motorOnAll();
+	controlBR.motorOnAll();
 	Serial.println("Controller is working now!");
 
 	systime_t wakeTime = chVTGetSystemTimeX(); // T0
@@ -320,30 +320,30 @@ THD_FUNCTION(legThread, arg)
 	{
 		while (CANBus0.available())
 		{
-			CANBus0.read(FLLeg.rxMsg);
-			if (FLLeg.unpackReply())
-				FLLeg.updateState();
+			CANBus0.read(controlFL.rxMsg);
+			if (controlFL.unpackReply())
+				controlFL.updateState();
 			else
 			{
-				FRLeg.unpackReply();
-				FRLeg.updateState();
+				controlFR.unpackReply();
+				controlFR.updateState();
 			}
 		}
 		while (CANBus1.available())
 		{
-			CANBus1.read(BLLeg.rxMsg);
-			if (BLLeg.unpackReply())
-				BLLeg.updateState();
+			CANBus1.read(controlBL.rxMsg);
+			if (controlBL.unpackReply())
+				controlBL.updateState();
 			else
 			{
-				BRLeg.unpackReply();
-				BRLeg.updateState();
+				controlBR.unpackReply();
+				controlBR.updateState();
 			}
 		}
-		FLLeg.control();
-		//FRLeg.control();
-		//BLLeg.control();
-		//BRLeg.control();
+		controlFL.control();
+		controlFR.control();
+		controlBL.control();
+		controlBR.control();
 
 		//counter++;
 		wakeTime += MS2ST((uint32_t)1000 / F_LEG_THREAD);
