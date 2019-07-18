@@ -7,6 +7,7 @@
 #include <Eigen/LU>
 #include "legController.h"
 #include "trajectory.h"
+#include "IMU.h"
 //------------------------------------------------------------------------------
 // BlinkThread: Blink the built-in led at 1Hz so you know if the Teensy is on.
 
@@ -41,6 +42,7 @@ void chSetup()
 	chThdCreateStatic(waBlinkThread, sizeof(waBlinkThread), NORMALPRIO, BlinkThread, NULL);
 	chThdCreateStatic(waLegThread, sizeof(waLegThread), NORMALPRIO + P_LEG_THREAD, legThread, NULL);
 	chThdCreateStatic(waTrajThread, sizeof(waTrajThread), NORMALPRIO + P_TRAJ_THREAD, trajThread, NULL);
+	chThdCreateStatic(waIMUThread, sizeof(waIMUThread), NORMALPRIO + P_IMU_THREAD, IMUThread, NULL);
 	// Initializing the mutex sharing the resource.
 }
 
@@ -53,6 +55,8 @@ void printUnusedStack()
 	Serial.print(chUnusedThreadStack(waLegThread, sizeof(waLegThread)));
 	Serial.print(' ');
 	Serial.print(chUnusedThreadStack(waTrajThread, sizeof(waTrajThread)));
+	Serial.print(' ');
+	Serial.print(chUnusedThreadStack(waIMUThread, sizeof(waIMUThread)));
 	Serial.print(' ');
 	Serial.print(chUnusedMainStack());
 	Serial.println();

@@ -6,7 +6,8 @@
 ///debug///
 
 //#define DEBUG_LEG
-//#define DEBUG_MOTOR
+//#define DEBUG_TRAJ
+#define DEBUG_IMU
 #define DEBUG_THREAD
 
 /// motorController///
@@ -79,11 +80,13 @@ extern int legCANPort[4];
 
 ///Thread///
 #define F_LEG_THREAD 500 //Hz
-#define P_LEG_THREAD 5   //Priority
+#define P_LEG_THREAD 4   //Priority
 #define F_TRAJ_THREAD 200
 #define P_TRAJ_THREAD 3 //Priority
-#define F_IMU_THREAD 500
-#define P_IMU_THREAD 4
+#define F_IMU_THREAD 250
+#define P_IMU_THREAD 3 //Priority
+extern int counter;
+
 ///Trajectory///
 #define F_STEP 3		 //Frequency of step
 #define FEET_HEIGHT 0.2f //The max height when swiping

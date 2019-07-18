@@ -67,8 +67,8 @@ THD_FUNCTION(trajThread, arg)
 		trajFR.updateDes();
 		trajBL.updateDes();
 		trajBR.updateDes();
-#ifdef DEBUG_THREAD;
-		counter++;
+#ifdef DEBUG_TRAJ
+		//counter++;
 #endif
 		wakeTime += MS2ST((uint32_t)1000 / F_TRAJ_THREAD);
 		chThdSleepUntil(wakeTime);

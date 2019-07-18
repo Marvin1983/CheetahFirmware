@@ -4,7 +4,6 @@ FlexCAN CANBus0(1000000, 0);
 FlexCAN CANBus1(1000000, 1);
 CAN_message_t legController::rxMsg; //receive message
 
-int counter;
 mutex_t legDesDataMutex;
 
 /// CAN Command Packet Structure ///
@@ -348,8 +347,9 @@ THD_FUNCTION(legThread, arg)
 		controlFR.control();
 		controlBL.control();
 		controlBR.control();
-
-		//counter++;
+		#ifdef DEBUG_LEG
+		counter++;
+		#endif
 		wakeTime += MS2ST((uint32_t)1000 / F_LEG_THREAD);
 		chThdSleepUntil(wakeTime);
 	}
