@@ -81,10 +81,12 @@ extern int legCANPort[4];
 #define F_LEG_THREAD 500 //Hz
 #define P_LEG_THREAD 5   //Priority
 #define F_TRAJ_THREAD 200
-#define P_TRAJ_THREAD 4 //Priority
-
+#define P_TRAJ_THREAD 3 //Priority
+#define F_IMU_THREAD 500
+#define P_IMU_THREAD 4
 ///Trajectory///
 #define F_STEP 3		 //Frequency of step
 #define FEET_HEIGHT 0.2f //The max height when swiping
 #define STAND_DUTY 0.5f  //stand duty ratio
+
 #endif
