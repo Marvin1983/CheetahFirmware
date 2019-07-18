@@ -252,6 +252,10 @@ void legController::updateState() //fowrd kinematic
 		inverseJacobian = jacobian.inverse();
 	vEst = jacobian * vEstM;
 	fEst = jacobian * tEstM;
+	if (fEst(2) < MAX_FORCE_ERROR)
+		isContact = true;
+	else
+		isContact = false;
 }
 
 void legController::control()

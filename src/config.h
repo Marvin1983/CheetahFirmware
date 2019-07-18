@@ -35,6 +35,7 @@
 #define BL_LEG_ID 2
 #define BR_LEG_ID 3
 
+#define MAX_FORCE_ERROR -1.0f
 struct motorPDGain_t
 {
 	float kpAbad;
@@ -78,9 +79,9 @@ extern int legCANPort[4];
 
 ///Thread///
 #define F_LEG_THREAD 500 //Hz
-#define P_LEG_THREAD 1   //Priority
+#define P_LEG_THREAD 5   //Priority
 #define F_TRAJ_THREAD 200
-#define P_TRAJ_THREAD 1 //Priority
+#define P_TRAJ_THREAD 4 //Priority
 
 ///Trajectory///
 #define F_STEP 3		 //Frequency of step
