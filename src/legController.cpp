@@ -251,7 +251,7 @@ void legController::updateState() //fowrd kinematic
 	if (jacobian.determinant())
 		inverseJacobian = jacobian.inverse();
 	vEst = jacobian * vEstM;
-	fEst = jacobian * tEstM;
+	fEst = inverseJacobian.transpose() * tEstM;
 	if (fEst(2) < MAX_FORCE_ERROR)
 		isContact = true;
 	else
