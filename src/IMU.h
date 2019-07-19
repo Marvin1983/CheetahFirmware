@@ -30,6 +30,10 @@ public:
 	void update(float anlge, float velocity);
 };
 
+float getRoll(float *read, float norm);
+float getPitch(float *read, float norm);
+
+
 extern THD_WORKING_AREA(waIMUThread, 2048);
 
 extern THD_FUNCTION(IMUThread, arg);

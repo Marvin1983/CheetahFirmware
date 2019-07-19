@@ -28,7 +28,7 @@ void kalman ::update(float angle, float velocity)
 	P = P - K * H * P;
 }
 
-MPU9250 IMU(SPI1, 31);
+MPU9250 IMU(Wire, 0x68);
 
 THD_WORKING_AREA(waIMUThread, 2048);
 
@@ -41,11 +41,19 @@ THD_FUNCTION(IMUThread, arg)
 	{
 		Serial.println("IMU initialization unsuccessful");
 		Serial.println("Check IMU wiring or try cycling power");
-		Serial.println("Stop!!!");
+		Serial.println(status);
 		while (1)
 			;
 	}
-	IMU.setSrd(F_IMU_THREAD - 1);
+	status = IMU.setSrd(F_IMU_THREAD - 1);
+	if (status < 0)
+	{
+		Serial.println("IMU setSrd unsuccessful");
+		Serial.println(status);
+		while (1)
+			;
+	}
+
 	kalman roll(1.0f / F_IMU_THREAD, 0.001f, 0.003f, 0.3f);
 
 	systime_t wakeTime = chVTGetSystemTimeX();
@@ -56,7 +64,15 @@ THD_FUNCTION(IMUThread, arg)
 		float accXYZ[3] = {IMU.getAccelX_mss(), IMU.getAccelY_mss(), IMU.getAccelZ_mss()};
 		float accNorm = sqrt(accXYZ[0] * accXYZ[0] + accXYZ[1] * accXYZ[1] + accXYZ[2] * accXYZ[2]);
 		float rollFAcc = getRoll(accXYZ, accNorm); //roll angle form accXYZ
+		if (accXYZ[0] < 0)
+			rollFAcc = -rollFAcc;
+		Serial.print(accXYZ[0], 3);
+		Serial.print(',');
+		Serial.print(accXYZ[1], 3);
+		Serial.print(',');
+		Serial.print(accXYZ[2], 3);
 		Serial.println();
+		//Serial.println(rollFAcc);
 
 #ifdef DEBUG_IMU
 		counter++;
@@ -67,14 +83,14 @@ THD_FUNCTION(IMUThread, arg)
 }
 float getRoll(float *read, float norm)
 {
-	float fNormXZ = sqrt(read[0] * read[0] + read[2] * read[2]);
-	float fCos = fNormXZ / norm;
+	float fNormYZ = sqrt(read[1] * read[1] + read[2] * read[2]);
+	float fCos = fNormYZ / norm;
 	return acos(fCos) * 57.295779513f;
 }
 
 float getPitch(float *read, float norm)
 {
-	float fNormYZ = sqrt(read[1] * read[1] + read[2] * read[2]);
-	float fCos = fNormYZ / norm;
+	float fNormXZ = sqrt(read[0] * read[0] + read[2] * read[2]);
+	float fCos = fNormXZ / norm;
 	return acos(fCos) * 57.295779513f;
 }

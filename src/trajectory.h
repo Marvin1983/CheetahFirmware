@@ -23,9 +23,6 @@ public:
 	void touchDown();
 };
 
-float getRoll(float *read, float norm);
-float getPitch(float *read, float norm);
-
 extern THD_WORKING_AREA(waTrajThread, 512);
 
 extern THD_FUNCTION(trajThread, arg);

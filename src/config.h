@@ -8,15 +8,14 @@
 //#define DEBUG_LEG
 //#define DEBUG_TRAJ
 #define DEBUG_IMU
-#define DEBUG_THREAD
-
+//#define DEBUG_THREAD
 
 ///Thread///
 #define F_LEG_THREAD 500 //Hz
 #define P_LEG_THREAD 4   //Priority
 #define F_TRAJ_THREAD 200
 #define P_TRAJ_THREAD 3 //Priority
-#define F_IMU_THREAD 250
+#define F_IMU_THREAD 10
 #define P_IMU_THREAD 3 //Priority
 extern int counter;
 
@@ -87,7 +86,6 @@ extern struct motorInitPos_t motorInitPos[4];
 extern struct feetPDGain_t feetGain[4];
 extern struct legLength_t legLength[4];
 extern int legCANPort[4];
-
 
 ///Trajectory///
 #define F_STEP 3		 //Frequency of step
