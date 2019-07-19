@@ -15,7 +15,7 @@
 #define P_LEG_THREAD 4   //Priority
 #define F_TRAJ_THREAD 200
 #define P_TRAJ_THREAD 3 //Priority
-#define F_IMU_THREAD 10
+#define F_IMU_THREAD 1000
 #define P_IMU_THREAD 3 //Priority
 extern int counter;
 
@@ -93,5 +93,9 @@ extern int legCANPort[4];
 #define STAND_DUTY 0.5f  //stand duty ratio
 
 //IMU
+#define I2Cclock 1000000
+#define I2Cport Wire
+#define MPU9250_ADDRESS MPU9250_ADDRESS_AD0 // Use either this line or the next to select which I2C address your device is using
+//#define MPU9250_ADDRESS MPU9250_ADDRESS_AD1
 
 #endif

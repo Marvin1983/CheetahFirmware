@@ -60,6 +60,7 @@ THD_WORKING_AREA(waTrajThread, 512);
 THD_FUNCTION(trajThread, arg)
 {
 	(void)arg;
+	Serial.println("[Traj]\tTraj genertaor is running...");
 	systime_t wakeTime = chVTGetSystemTimeX(); //
 	while (true)
 	{

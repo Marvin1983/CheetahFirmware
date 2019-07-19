@@ -302,21 +302,21 @@ THD_WORKING_AREA(waLegThread, 512);
 THD_FUNCTION(legThread, arg)
 {
 	(void)arg;
-	Serial.println("Set up CAN...");
+	Serial.println("[Leg]\tSet up CAN...");
 	CANBus0.begin();
 	CANBus1.begin();
 
-	Serial.println("Zero all...");
+	Serial.println("[Leg]\tZero all...");
 	controlFL.zeroAll();
 	controlFR.zeroAll();
 	controlBL.zeroAll();
 	controlBR.zeroAll();
-	Serial.println("Power on all...");
+	Serial.println("[Leg]\tPower on all...");
 	controlFL.motorOnAll();
 	controlFR.motorOnAll();
 	controlBL.motorOnAll();
 	controlBR.motorOnAll();
-	Serial.println("Controller is working now!");
+	Serial.println("[Leg]\tController is working now!");
 
 	systime_t wakeTime = chVTGetSystemTimeX(); // T0
 	while (true)
@@ -347,9 +347,9 @@ THD_FUNCTION(legThread, arg)
 		controlFR.control();
 		controlBL.control();
 		controlBR.control();
-		#ifdef DEBUG_LEG
+#ifdef DEBUG_LEG
 		counter++;
-		#endif
+#endif
 		wakeTime += MS2ST((uint32_t)1000 / F_LEG_THREAD);
 		chThdSleepUntil(wakeTime);
 	}
