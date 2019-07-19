@@ -13,7 +13,7 @@ private:
 	Vector3f start;
 	Vector3f delta;
 
-	legController *legCon;
+	legController *leg;
 
 public:
 	trajectory(legController *leg);
@@ -22,6 +22,9 @@ public:
 	void updateDes();
 	void touchDown();
 };
+
+float getRoll(float *read, float norm);
+float getPitch(float *read, float norm);
 
 extern THD_WORKING_AREA(waTrajThread, 512);
 

@@ -75,7 +75,6 @@ extern legController controlFR;
 extern legController controlBL;
 extern legController controlBR;
 
-
 extern THD_WORKING_AREA(waLegThread, 512);
 extern THD_FUNCTION(legThread, arg);
 

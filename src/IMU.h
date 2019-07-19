@@ -13,15 +13,21 @@ using namespace Eigen;
 class kalman
 {
 private:
-	Vector2f pX; //Predicted state
-	Matrix2f F;  //State-transition model
-	Matrix2f H;  //Observation model
-	Matrix2f K;  //Kalman gain
+	Matrix2f F; //State-transition model
+	Matrix2f H; //Observation model
+	Matrix2f K; //Kalman gain
+	Matrix2f Q;
+	Matrix2f R;
+	Matrix2f P;
+	Vector2f Z;
+	Matrix2f S;
+	void predict();
 
 public:
-	Vector2f fX; //Fixed state
-	kalman(float dt);
+	Vector2f X; // State
+	kalman(float dt, float qAngle, float qBias, float r);
 	~kalman();
+	void update(float anlge, float velocity);
 };
 
 extern THD_WORKING_AREA(waIMUThread, 2048);

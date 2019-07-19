@@ -10,6 +10,16 @@
 #define DEBUG_IMU
 #define DEBUG_THREAD
 
+
+///Thread///
+#define F_LEG_THREAD 500 //Hz
+#define P_LEG_THREAD 4   //Priority
+#define F_TRAJ_THREAD 200
+#define P_TRAJ_THREAD 3 //Priority
+#define F_IMU_THREAD 250
+#define P_IMU_THREAD 3 //Priority
+extern int counter;
+
 /// motorController///
 #define P_MIN -12.5f //between -4*pi and 4*pi
 #define P_MAX 12.5f
@@ -78,18 +88,12 @@ extern struct feetPDGain_t feetGain[4];
 extern struct legLength_t legLength[4];
 extern int legCANPort[4];
 
-///Thread///
-#define F_LEG_THREAD 500 //Hz
-#define P_LEG_THREAD 4   //Priority
-#define F_TRAJ_THREAD 200
-#define P_TRAJ_THREAD 3 //Priority
-#define F_IMU_THREAD 250
-#define P_IMU_THREAD 3 //Priority
-extern int counter;
 
 ///Trajectory///
 #define F_STEP 3		 //Frequency of step
 #define FEET_HEIGHT 0.2f //The max height when swiping
 #define STAND_DUTY 0.5f  //stand duty ratio
+
+//IMU
 
 #endif
