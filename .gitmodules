@@ -11,6 +11,3 @@
 [submodule "lib/SdFat"]
 	path = lib/SdFat
 	url = git@github.com:greiman/SdFat.git
-[submodule "lib/MPU9250"]
-	path = lib/MPU9250
-	url = git@github.com:bolderflight/MPU9250.git
