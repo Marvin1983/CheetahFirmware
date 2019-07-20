@@ -80,14 +80,35 @@ THD_FUNCTION(IMUThread, arg)
 		MahonyQuaternionUpdate(myIMU.ax, myIMU.ay, myIMU.az, myIMU.gx * DEG_TO_RAD,
 							   myIMU.gy * DEG_TO_RAD, myIMU.gz * DEG_TO_RAD, myIMU.my,
 							   myIMU.mx, myIMU.mz, myIMU.deltat);
-		// Serial print and/or display at 0.5 s rate independent of data rates
+		// Define output variables from updated quaternion---these are Tait-Bryan
+		// angles, commonly used in aircraft orientation. In this coordinate system,
+		// the positive z-axis is down toward Earth. Yaw is the angle between Sensor
+		// x-axis and Earth magnetic North (or true North if corrected for local
+		// declination, looking down on the sensor positive yaw is counterclockwise.
+		// Pitch is angle between sensor x-axis and Earth ground plane, toward the
+		// Earth is positive, up toward the sky is negative. Roll is angle between
+		// sensor y-axis and Earth ground plane, y-axis up is positive roll. These
+		// arise from the definition of the homogeneous rotation matrix constructed
+		// from quaternions. Tait-Bryan angles as well as Euler angles are
+		// non-commutative; that is, the get the correct orientation the rotations
+		// must be applied in the correct order which for this configuration is yaw,
+		// pitch, and then roll.
+		// For more see
+		// http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+		// which has additional links.
+		myIMU.yaw = atan2(2.0f * (*(getQ() + 1) * *(getQ() + 2) + *getQ() * *(getQ() + 3)), *getQ() * *getQ() + *(getQ() + 1) * *(getQ() + 1) - *(getQ() + 2) * *(getQ() + 2) - *(getQ() + 3) * *(getQ() + 3));
+		myIMU.pitch = -asin(2.0f * (*(getQ() + 1) * *(getQ() + 3) - *getQ() * *(getQ() + 2)));
+		myIMU.roll = atan2(2.0f * (*getQ() * *(getQ() + 1) + *(getQ() + 2) * *(getQ() + 3)), *getQ() * *getQ() - *(getQ() + 1) * *(getQ() + 1) - *(getQ() + 2) * *(getQ() + 2) + *(getQ() + 3) * *(getQ() + 3));
+		myIMU.pitch *= RAD_TO_DEG;
+		myIMU.yaw *= RAD_TO_DEG;
+		myIMU.yaw -= 0;
+		myIMU.roll *= RAD_TO_DEG;
 		myIMU.delt_t = millis() - myIMU.count;
 
-		// update LCD once per half-second independent of read rate
-		if (myIMU.delt_t > 500)
+		if (myIMU.delt_t > 20)
 		{
 
-			Serial.print("ax = ");
+			/* 			Serial.print("ax = ");
 			Serial.print((int)1000 * myIMU.ax);
 			Serial.print(" ay = ");
 			Serial.print((int)1000 * myIMU.ay);
@@ -118,46 +139,22 @@ THD_FUNCTION(IMUThread, arg)
 			Serial.print(" qy = ");
 			Serial.print(*(getQ() + 2));
 			Serial.print(" qz = ");
-			Serial.println(*(getQ() + 3));
-
-			// Define output variables from updated quaternion---these are Tait-Bryan
-			// angles, commonly used in aircraft orientation. In this coordinate system,
-			// the positive z-axis is down toward Earth. Yaw is the angle between Sensor
-			// x-axis and Earth magnetic North (or true North if corrected for local
-			// declination, looking down on the sensor positive yaw is counterclockwise.
-			// Pitch is angle between sensor x-axis and Earth ground plane, toward the
-			// Earth is positive, up toward the sky is negative. Roll is angle between
-			// sensor y-axis and Earth ground plane, y-axis up is positive roll. These
-			// arise from the definition of the homogeneous rotation matrix constructed
-			// from quaternions. Tait-Bryan angles as well as Euler angles are
-			// non-commutative; that is, the get the correct orientation the rotations
-			// must be applied in the correct order which for this configuration is yaw,
-			// pitch, and then roll.
-			// For more see
-			// http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-			// which has additional links.
-			myIMU.yaw = atan2(2.0f * (*(getQ() + 1) * *(getQ() + 2) + *getQ() * *(getQ() + 3)), *getQ() * *getQ() + *(getQ() + 1) * *(getQ() + 1) - *(getQ() + 2) * *(getQ() + 2) - *(getQ() + 3) * *(getQ() + 3));
-			myIMU.pitch = -asin(2.0f * (*(getQ() + 1) * *(getQ() + 3) - *getQ() * *(getQ() + 2)));
-			myIMU.roll = atan2(2.0f * (*getQ() * *(getQ() + 1) + *(getQ() + 2) * *(getQ() + 3)), *getQ() * *getQ() - *(getQ() + 1) * *(getQ() + 1) - *(getQ() + 2) * *(getQ() + 2) + *(getQ() + 3) * *(getQ() + 3));
-			myIMU.pitch *= RAD_TO_DEG;
-			myIMU.yaw *= RAD_TO_DEG;
+			Serial.println(*(getQ() + 3)); */
 
 			// Declination of SparkFun Electronics (40°05'26.6"N 105°11'05.9"W) is
 			//    8° 30' E  ± 0° 21' (or 8.5°) on 2016-07-19
 			// - http://www.ngdc.noaa.gov/geomag-web/#declination
-			myIMU.yaw -= 0;
-			myIMU.roll *= RAD_TO_DEG;
 
-			Serial.print("Yaw, Pitch, Roll: ");
+			//Serial.print("Yaw, Pitch, Roll: ");
 			Serial.print(myIMU.yaw, 2);
 			Serial.print(", ");
 			Serial.print(myIMU.pitch, 2);
 			Serial.print(", ");
 			Serial.println(myIMU.roll, 2);
 
-			Serial.print("rate = ");
-			Serial.print((float)myIMU.sumCount / myIMU.sum, 2);
-			Serial.println(" Hz");
+			// Serial.print("rate = ");
+			// Serial.print((float)myIMU.sumCount / myIMU.sum, 2);
+			// Serial.println(" Hz");
 			myIMU.count = millis();
 			myIMU.sumCount = 0;
 			myIMU.sum = 0;
